@@ -43,6 +43,21 @@ module TinyBack
                 end
             end
 
+            def self.advance code
+                charset = "abcdefghijklmnopqrstuvwxyz0123456789"
+                current = code.size - 1
+                while current >= 0
+                    if code[current] == charset[-1]
+                        code[current] = charset[0]
+                    else
+                        code[current] = charset[charset.index(code[current]) + 1]
+                        return code
+                    end
+                    current -= 1
+                end
+                return charset[0].chr + code
+            end
+
         end
 
     end

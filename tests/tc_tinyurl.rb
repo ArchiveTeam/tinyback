@@ -33,4 +33,11 @@ class TC_TinyURL < Test::Unit::TestCase
         end
     end
 
+    def test_advance
+        assert_equal "b", TinyURL.advance("a")
+        assert_equal "0", TinyURL.advance("z")
+        assert_equal "aa", TinyURL.advance("9")
+        assert_equal "ba", TinyURL.advance("a9")
+    end
+
 end
