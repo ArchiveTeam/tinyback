@@ -6,7 +6,7 @@ class TC_TinyURL < Test::Unit::TestCase
     include TinyBack::Services
 
     def setup
-        @instance = TinyBack::Services::TinyURL.new unless @instance
+        @instance = TinyURL.new unless @instance
     end
 
     def test_existant
@@ -20,28 +20,28 @@ class TC_TinyURL < Test::Unit::TestCase
     end
 
     def test_canonical
-        assert_equal "test", @instance.canonicalize("TEsT") # Lowercase
-        assert_equal "test", @instance.canonicalize("--te---st--") # Dash
-        assert_equal "test", @instance.canonicalize("test/another-test") # Slash
+        assert_equal "test", TinyURL.canonicalize("TEsT") # Lowercase
+        assert_equal "test", TinyURL.canonicalize("--te---st--") # Dash
+        assert_equal "test", TinyURL.canonicalize("test/another-test") # Slash
     end
 
     def test_invalid
         assert_raise InvalidCodeError do # Invalid character
-            @instance.canonicalize "test&"
+            TinyURL.canonicalize "test&"
         end
         assert_raise InvalidCodeError do # Too short
-            @instance.canonicalize ""
+            TinyURL.canonicalize ""
         end
         assert_raise InvalidCodeError do # Too long
-            @instance.canonicalize "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCD"
+            TinyURL.canonicalize "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCD"
         end
     end
 
     def test_advance
-        assert_equal "b", @instance.advance("a")
-        assert_equal "0", @instance.advance("z")
-        assert_equal "aa", @instance.advance("9")
-        assert_equal "ba", @instance.advance("a9")
+        assert_equal "b", TinyURL.advance("a")
+        assert_equal "0", TinyURL.advance("z")
+        assert_equal "aa", TinyURL.advance("9")
+        assert_equal "ba", TinyURL.advance("a9")
     end
 
 end

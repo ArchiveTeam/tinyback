@@ -12,14 +12,14 @@ module TinyBack
             # Returns the character set used by this shortener. This function
             # is probably only useful for the advance method in the base class.
             #
-            def charset
+            def self.charset
                 "abcdefghijklmnopqrstuvwxyz0123456789"
             end
 
             #
             # Returns the complete short-url for a given code.
             #
-            def url code
+            def self.url code
                 "http://tinyurl.com/#{canonicalize(code)}"
             end
 
@@ -32,7 +32,7 @@ module TinyBack
             #   - a slash (everything after the slash is ignored)
             # The canonical version may not be longer than 49 characters
             #
-            def canonicalize code
+            def self.canonicalize code
                 code = code.split("/").first.to_s # Remove everything after slash
                 code.tr! "-", "" # Remove dashes
                 code.downcase! # Make everything lowercase
@@ -47,7 +47,7 @@ module TinyBack
             def fetch code
                 begin
                     socket = TCPSocket.new HOST, 80
-                    socket.write ["HEAD /#{canonicalize(code)} HTTP/1.0", "Host: #{HOST}"].join("\r\n") + "\r\n\r\n"
+                    socket.write ["HEAD /#{self.class.canonicalize(code)} HTTP/1.0", "Host: #{HOST}"].join("\r\n") + "\r\n\r\n"
                     case (line = socket.gets)
                     when "HTTP/1.0 301 Moved Permanently\r\n"
                         case (line = socket.gets)
