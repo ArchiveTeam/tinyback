@@ -59,7 +59,7 @@ module TinyBack
                             return match[1] if match
                         end
                         raise FetchError.new "Expected Location, but received #{line.inspect}"
-                    when "HTTP/1.0 200 OK\r\n"
+                    when "HTTP/1.0 404 Not Found\r\n"
                         raise NoRedirectError.new
                     else
                         raise FetchError.new "Expected 200/301, but received #{line.inspect}"
