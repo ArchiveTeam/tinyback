@@ -10,25 +10,33 @@ module TinyBack
         FETCH_QUEUE_MIN_SIZE = 100
         FETCH_QUEUE_MAX_SIZE = 1000
 
-        def initialize
-            @logger = Logger.new STDOUT
+        FETCH_THREADS = 10
+
+        def initialize service, start, stop
+            filename = service.to_s.split("::").last + "_" + start + "-" + stop
+            @logger = Logger.new(filename + ".log")
             @logger.info "Initializing Reaper"
 
             @run = true
-            @service = Services::TinyURL
+            @service = service
 
             @fetch_queue = []
             @fetch_mutex = Mutex.new
             @write_queue = Queue.new
 
-            threads = []
-            threads << generate_thread("a", "9999")
-            5.times do
-                threads << fetch_thread
+            @threads = []
+            @threads << generate_thread(start, stop)
+            FETCH_THREADS.times do
+                @threads << fetch_thread
             end
-            threads << write_thread("out.msgpack")
+            @threads << write_thread(filename + ".mpac")
+        end
 
-            threads.each do |thread|
+        #
+        # Waits for the reaper to finish.
+        #
+        def join
+            @threads.each do |thread|
                 thread.join
             end
         end
@@ -45,7 +53,7 @@ module TinyBack
                 @logger.info "Starting generate thread (#{start.inspect} to #{stop.inspect})"
                 current = start
                 sleep_interval = 30
-                while @run do
+                until current == stop
                     size = @fetch_mutex.synchronize do
                         @fetch_queue.size
                     end
@@ -67,7 +75,12 @@ module TinyBack
                         sleep_interval += 1
                         sleep 1
                     end
-                    break if current == stop
+                end
+                terminate = Array.new(FETCH_THREADS) do
+                    :stop
+                end
+                @fetch_mutex.synchronize do
+                    @fetch_queue.concat terminate
                 end
                 @logger.info "Generate thread terminated"
             end
@@ -81,10 +94,11 @@ module TinyBack
                     code = @fetch_mutex.synchronize do
                         @fetch_queue.pop
                     end
+                    break if code == :stop
                     if code.nil?
                         @logger.warn "Empty fetch queue caused fetch stall"
                         sleep 1
-                        continue
+                        next
                     end
                     begin
                         url = service.fetch code
@@ -96,6 +110,7 @@ module TinyBack
                         @logger.info "Code #{code.inspect} is blocked by service"
                     end
                 end
+                @write_queue.push :stop
                 @logger.info "Fetch thread terminated"
             end
         end
@@ -103,9 +118,14 @@ module TinyBack
         def write_thread filename
             Thread.new(filename) do |filename|
                 @logger.info "Starting write thread"
+                stop = FETCH_THREADS
                 handle = File.open filename, "w"
-                while @run do
+                while stop > 0 do
                     code, url = @write_queue.pop
+                    if code == :stop
+                        stop -= 1
+                        next
+                    end
                     handle.write [code, url].to_msgpack
                 end
                 handle.close
@@ -116,5 +136,3 @@ module TinyBack
     end
 
 end
-
-reaper = TinyBack::Reaper.new
