@@ -1,6 +1,8 @@
 require "hpricot"
 require "socket"
 
+Hpricot.buffer_size = 5242880
+
 module TinyBack
 
     module Services
