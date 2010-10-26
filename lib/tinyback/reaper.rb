@@ -84,13 +84,13 @@ module TinyBack
                     if code.nil?
                         @logger.warn "Empty fetch queue caused fetch stall"
                         sleep 1
-                        break
+                        continue
                     end
                     begin
                         url = service.fetch code
                         @logger.debug "Code #{code.inspect} found (#{url.inspect})"
                         @write_queue.push [code, url]
-                    rescue UnknownCodeError
+                    rescue Services::NoRedirectError
                         @logger.debug "Code #{code.inspect} is unknown to service"
                     end
                 end
