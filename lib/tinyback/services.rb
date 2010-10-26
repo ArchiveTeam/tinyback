@@ -14,6 +14,9 @@ module TinyBack
         class NoRedirectError < ServiceError
         end
 
+        class BlockedError < ServiceError
+        end
+
         class Base
 
             def self.advance code

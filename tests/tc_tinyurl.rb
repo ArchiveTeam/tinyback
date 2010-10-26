@@ -19,6 +19,20 @@ class TC_TinyURL < Test::Unit::TestCase
         end
     end
 
+    def test_existant_404
+        assert_equal "http://www.unicyclist.com/newgateway/get.php", @instance.fetch("cs")
+    end
+
+    def test_existant_self
+        assert_equal "http://tinyurl.com/create.php?url=http://translate.google.com/translate?hl=en&u=http%3A%2F%2Fwww.buy-tees.com&langpair=en%7Cfr", @instance.fetch("w")
+    end
+
+    def test_blocked
+        assert_raise BlockedError do
+            @instance.fetch("dick")
+        end
+    end
+
     def test_canonical
         assert_equal "test", TinyURL.canonicalize("TEsT") # Lowercase
         assert_equal "test", TinyURL.canonicalize("--te---st--") # Dash

@@ -92,6 +92,8 @@ module TinyBack
                         @write_queue.push [code, url]
                     rescue Services::NoRedirectError
                         @logger.debug "Code #{code.inspect} is unknown to service"
+                    rescue Services::BlockedError
+                        @logger.info "Code #{code.inspect} is blocked by service"
                     end
                 end
                 @logger.info "Fetch thread terminated"
