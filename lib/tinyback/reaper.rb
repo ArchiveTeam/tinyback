@@ -39,6 +39,7 @@ module TinyBack
             @threads.each do |thread|
                 thread.join
             end
+            @logger.info "Reaper finished (this is the last line)"
         end
 
         #
@@ -68,7 +69,7 @@ module TinyBack
                         @fetch_mutex.synchronize do
                             @fetch_queue.concat new.shuffle
                         end
-                        @logger.debug "Filled fetch queue with #{new.size} items"
+                        @logger.info "Filled fetch queue with #{new.size} items (#{new.first.inspect}-#{new.last.inspect})"
                         sleep_interval -= 1
                         sleep sleep_interval
                     else
@@ -110,6 +111,9 @@ module TinyBack
                         @logger.info "Code #{code.inspect} is blocked by service"
                     rescue Services::FetchError => e
                         @logger.error "Code #{code.inspect} triggered #{e.inspect}"
+                    rescue => e
+                        @logger.fatal "Code #{code.inspect} triggered #{e.inspect}"
+                        exit
                     end
                 end
                 @write_queue.push :stop
