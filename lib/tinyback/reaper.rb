@@ -108,6 +108,8 @@ module TinyBack
                         @logger.debug "Code #{code.inspect} is unknown to service"
                     rescue Services::BlockedError
                         @logger.info "Code #{code.inspect} is blocked by service"
+                    rescue Services::FetchError => e
+                        @logger.error "Code #{code.inspect} triggered #{e.inspect}"
                     end
                 end
                 @write_queue.push :stop
