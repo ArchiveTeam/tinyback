@@ -7,8 +7,8 @@ module TinyBack
 
     class Reaper
 
-        FETCH_QUEUE_MIN_SIZE = 100
-        FETCH_QUEUE_MAX_SIZE = 1000
+        FETCH_QUEUE_MIN_SIZE = 500
+        FETCH_QUEUE_MAX_SIZE = 5000
 
         FETCH_THREADS = 10
 
