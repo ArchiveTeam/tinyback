@@ -111,6 +111,11 @@ module TinyBack
                         @logger.info "Code #{code.inspect} is blocked by service"
                     rescue Services::FetchError => e
                         @logger.error "Code #{code.inspect} triggered #{e.inspect}"
+                    rescue Errno::ECONNRESET => e
+                        @logger.error "Code #{code.inspect} triggered #{e.inspect}, retrying"
+                        @fetch_mutex.synchronize do
+                            @fetch_queue.unshift code
+                        end
                     rescue => e
                         @logger.fatal "Code #{code.inspect} triggered #{e.inspect}"
                         exit
