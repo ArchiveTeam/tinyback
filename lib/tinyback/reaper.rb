@@ -66,10 +66,10 @@ module TinyBack
                             break if current == stop
                             current = @service.advance(current)
                         end
+                        @logger.info "Filling fetch queue with #{new.size} items (#{new.first.inspect}-#{new.last.inspect})"
                         @fetch_mutex.synchronize do
-                            @fetch_queue.concat new.shuffle
+                            @fetch_queue = new.shuffle + @fetch_queue
                         end
-                        @logger.info "Filled fetch queue with #{new.size} items (#{new.first.inspect}-#{new.last.inspect})"
                         sleep_interval -= 1
                         sleep sleep_interval
                     else
@@ -81,7 +81,7 @@ module TinyBack
                     :stop
                 end
                 @fetch_mutex.synchronize do
-                    @fetch_queue.concat terminate
+                    @fetch_queue = terminate + @fetch_queue
                 end
                 @logger.info "Generate thread terminated"
             end
@@ -114,7 +114,7 @@ module TinyBack
                     rescue Errno::ECONNRESET => e
                         @logger.error "Code #{code.inspect} triggered #{e.inspect}, retrying"
                         @fetch_mutex.synchronize do
-                            @fetch_queue.unshift code
+                            @fetch_queue.push code
                         end
                     rescue => e
                         @logger.fatal "Code #{code.inspect} triggered #{e.inspect}"
