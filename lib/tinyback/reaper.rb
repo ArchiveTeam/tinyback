@@ -7,18 +7,16 @@ module TinyBack
 
     class Reaper
 
-        FETCH_QUEUE_MIN_SIZE = 500
-        FETCH_QUEUE_MAX_SIZE = 5000
+        FETCH_QUEUE_MIN_SIZE_PER_THREAD = 50
+        FETCH_QUEUE_MAX_SIZE_PER_THREAD = 500
 
-        FETCH_THREADS = 10
-
-        def initialize service, start, stop
+        def initialize service, start, stop, fetch_threads = 10
             filename = service.to_s.split("::").last + "_" + start + "-" + stop
             @logger = Logger.new(filename + ".log")
             @logger.info "Initializing Reaper"
 
-            @run = true
             @service = service
+            @fetch_threads = fetch_threads
 
             @fetch_queue = []
             @fetch_mutex = Mutex.new
@@ -26,7 +24,7 @@ module TinyBack
 
             @threads = []
             @threads << generate_thread(start, stop)
-            FETCH_THREADS.times do
+            @fetch_threads.times do
                 @threads << fetch_thread
             end
             @threads << write_thread(filename + ".mpac")
@@ -58,8 +56,8 @@ module TinyBack
                     size = @fetch_mutex.synchronize do
                         @fetch_queue.size
                     end
-                    if size < FETCH_QUEUE_MIN_SIZE
-                        target = FETCH_QUEUE_MAX_SIZE - size
+                    if size < (FETCH_QUEUE_MIN_SIZE_PER_THREAD * @fetch_threads)
+                        target = (FETCH_QUEUE_MAX_SIZE_PER_THREAD * @fetch_threads) - size
                         new = []
                         while new.size < target
                             new << current.dup
@@ -77,7 +75,7 @@ module TinyBack
                         sleep 1
                     end
                 end
-                terminate = Array.new(FETCH_THREADS) do
+                terminate = Array.new(@fetch_threads) do
                     :stop
                 end
                 @fetch_mutex.synchronize do
@@ -91,7 +89,7 @@ module TinyBack
             Thread.new do
                 @logger.info "Starting fetch thread"
                 service = @service.new
-                while @run do
+                loop do
                     code = @fetch_mutex.synchronize do
                         @fetch_queue.pop
                     end
@@ -129,7 +127,7 @@ module TinyBack
         def write_thread filename
             Thread.new(filename) do |filename|
                 @logger.info "Starting write thread"
-                stop = FETCH_THREADS
+                stop = @fetch_threads
                 handle = File.open filename, "w"
                 while stop > 0 do
                     code, url = @write_queue.pop
