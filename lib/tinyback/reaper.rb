@@ -8,8 +8,8 @@ module TinyBack
 
     class Reaper
 
-        FETCH_QUEUE_MIN_SIZE_PER_THREAD = 50
-        FETCH_QUEUE_MAX_SIZE_PER_THREAD = 500
+        FETCH_QUEUE_MIN_SIZE_PER_THREAD = 100
+        FETCH_QUEUE_MAX_SIZE_PER_THREAD = 1000
 
         def initialize service, start, stop, fetch_threads = 10
             filename = service.to_s.split("::").last + "_" + start + "-" + stop
