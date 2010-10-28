@@ -73,6 +73,7 @@ module TinyBack
                         @socket = nil
                         raise FetchError.new "Socket unexpectedly closed"
                     else
+                        @socket = nil
                         raise FetchError.new "Expected 301/404, but received #{line.inspect}"
                     end
                 end
