@@ -22,6 +22,7 @@ module TinyBack
             @fetch_queue = []
             @fetch_mutex = Mutex.new
             @write_queue = Queue.new
+            @failed = {}
 
             @threads = []
             @threads << generate_thread(start, stop)
@@ -40,6 +41,8 @@ module TinyBack
             end
             @logger.info "Reaper finished (this is the last line)"
         end
+
+        private
 
         #
         # Creates a new generate thread. The generate thread fills the fetch
@@ -114,15 +117,11 @@ module TinyBack
                         @logger.error "Code #{code.inspect} triggered #{e.inspect}"
                     rescue Errno::ECONNRESET, Errno::ECONNREFUSED => e
                         @logger.error "Code #{code.inspect} triggered #{e.inspect}, retrying"
-                        @fetch_mutex.synchronize do
-                            @fetch_queue.push code
-                        end
+                        requeue code
                     rescue Timeout::Error
                         @logger.error "Fetching code #{code.inspect} triggered a timeout, recycling service"
                         service = @service.new
-                        @fetch_mutex.synchronize do
-                            @fetch_queue.push code
-                        end
+                        requeue code
                     rescue => e
                         @logger.fatal "Code #{code.inspect} triggered #{e.inspect}"
                         exit
@@ -148,6 +147,28 @@ module TinyBack
                 end
                 handle.close
                 @logger.info "Write thread terminated"
+            end
+        end
+
+        def requeue code
+            fails = @fetch_mutex.synchronize do
+                if @failed.key? code
+                    @failed[code] += 1
+                else
+                    @failed[code] = 0
+                end
+            end
+            if fails > 5
+                @logger.warn "Code #{code.inspect} failed #{fails} times, not(!) retrying"
+            else
+                @logger.info "Retrying code #{code.inspect}"
+                @fetch_mutex.synchronize do
+                    if @fetch_queue[0] == :stop
+                        @fetch_queue.insert(@fetch_queue.rindex(:stop), code)
+                    else
+                        @fetch_queue.unshift code
+                    end
+                end
             end
         end
 
