@@ -1,5 +1,6 @@
 require "logger"
 require "msgpack"
+require "timeout"
 require "tinyback/services"
 require "thread"
 
@@ -100,17 +101,25 @@ module TinyBack
                         next
                     end
                     begin
-                        url = service.fetch code
-                        @logger.debug "Code #{code.inspect} found (#{url.inspect})"
-                        @write_queue.push [code, url]
+                        Timeout::timeout(10) do
+                            url = service.fetch code
+                            @logger.debug "Code #{code.inspect} found (#{url.inspect})"
+                            @write_queue.push [code, url]
+                        end
                     rescue Services::NoRedirectError
                         @logger.debug "Code #{code.inspect} is unknown to service"
                     rescue Services::BlockedError
                         @logger.info "Code #{code.inspect} is blocked by service"
                     rescue Services::FetchError => e
                         @logger.error "Code #{code.inspect} triggered #{e.inspect}"
-                    rescue Errno::ECONNRESET => e
+                    rescue Errno::ECONNRESET, Errno::ECONNREFUSED => e
                         @logger.error "Code #{code.inspect} triggered #{e.inspect}, retrying"
+                        @fetch_mutex.synchronize do
+                            @fetch_queue.push code
+                        end
+                    rescue Timeout::Error
+                        @logger.error "Fetching code #{code.inspect} triggered a timeout, recycling service"
+                        service = @service.new
                         @fetch_mutex.synchronize do
                             @fetch_queue.push code
                         end
