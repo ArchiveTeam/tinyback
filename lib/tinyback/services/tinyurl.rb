@@ -1,7 +1,7 @@
 require "hpricot"
 require "socket"
 
-Hpricot.buffer_size = 5242880
+Hpricot.buffer_size = 131072
 
 module TinyBack
 
@@ -69,13 +69,18 @@ module TinyBack
                     when "HTTP/1.0 200 OK\r\n"
                         socket.gets("\r\n\r\n")
                         data = socket.gets nil
-                        doc = Hpricot data
+                        begin
+                            doc = Hpricot data
+                        rescue Hpricot::ParseError => e
+                            raise FetchError.new "Could not parse HTML data (#{e.inspect})"
+                        end
                         if doc.at("/html/head/title").innerText == "Redirecting..."
                             return doc.at("/html/body").innerText[1..-1]
                         end
                         if doc.at("html/body/table/tr/td/h1:last").innerText == "Error: TinyURL redirects to a TinyURL."
                             return doc.at("/html/body/table/tr/td/p.intro/a").attributes["href"]
                         end
+                        doc = nil
                         raise FetchError.new "Could not parse URL for code #{code.inspect}"
                     when "HTTP/1.0 302 Found\r\n"
                         raise BlockedError.new

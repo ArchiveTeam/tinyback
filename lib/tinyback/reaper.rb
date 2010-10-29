@@ -72,6 +72,7 @@ module TinyBack
                         @fetch_mutex.synchronize do
                             @fetch_queue = new.shuffle + @fetch_queue
                         end
+                        new = nil
                         sleep_interval -= 1
                         sleep sleep_interval
                     else
@@ -151,15 +152,21 @@ module TinyBack
         end
 
         def requeue code
-            fails = @fetch_mutex.synchronize do
+            give_up = @fetch_mutex.synchronize do
                 if @failed.key? code
                     @failed[code] += 1
+                    if @failed[code] > 5
+                        @failed.delete code
+                        true
+                    else
+                        false
+                    end
                 else
-                    @failed[code] = 0
+                    false
                 end
             end
-            if fails > 5
-                @logger.warn "Code #{code.inspect} failed #{fails} times, not(!) retrying"
+            if give_up
+                @logger.warn "Code #{code.inspect} failed 5 times, not(!) retrying"
             else
                 @logger.info "Retrying code #{code.inspect}"
                 @fetch_mutex.synchronize do
