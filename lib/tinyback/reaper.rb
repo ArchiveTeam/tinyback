@@ -104,11 +104,11 @@ module TinyBack
                         next
                     end
                     begin
-                        Timeout::timeout(10) do
-                            url = service.fetch code
-                            @logger.debug "Code #{code.inspect} found (#{url.inspect})"
-                            @write_queue.push [code, url]
+                        url = Timeout::timeout(10) do
+                            service.fetch code
                         end
+                        @logger.debug "Code #{code.inspect} found (#{url.inspect})"
+                        @write_queue.push [code, url]
                     rescue Services::NoRedirectError
                         @logger.debug "Code #{code.inspect} is unknown to service"
                     rescue Services::BlockedError
