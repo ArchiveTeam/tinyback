@@ -1,4 +1,6 @@
 require "hpricot"
+require "resolv"
+require "singleton"
 require "socket"
 
 Hpricot.buffer_size = 131072
@@ -9,7 +11,56 @@ module TinyBack
 
         class TinyURL < Base
 
-            HOST = "tinyurl.com"
+            class IPManager
+
+                include Singleton
+
+                def initialize
+                    @mutex = Mutex.new
+                end
+
+                def get_ip
+                    @mutex.synchronize do
+                        if @time.nil? || @time + 300 < Time.now
+                            @time = Time.now
+                            @ips = resolve
+                        end
+                        ip = @ips.pop
+                        @ips.unshift ip
+                        ip
+                    end
+                end
+
+                private
+
+                def resolve
+                    nameservers = []
+                    Resolv::DNS.open do |resolv|
+                        resolv.getresources("tinyurl.com", Resolv::DNS::Resource::IN::NS).each do |nameserver|
+                            nameservers << nameserver.name.to_s
+                        end
+                    end
+
+                    ips = []
+                    nameservers.each do |nameserver|
+                        Resolv::DNS.open(:nameserver => nameserver) do |resolv|
+                            resolv.each_address("tinyurl.com") do |ip|
+                                ips << ip.to_s
+                            end
+                            resolv.each_address("www.tinyurl.com") do |ip|
+                                ips << ip.to_s
+                            end
+                        end
+                    end
+
+                    ips.uniq
+                end
+
+            end
+
+            def initialize
+                @ip = IPManager.instance.get_ip
+            end
 
             #
             # Returns the character set used by this shortener. This function
@@ -49,8 +100,8 @@ module TinyBack
             #
             def fetch code
                 begin
-                    socket = TCPSocket.new HOST, 80
-                    socket.write ["GET /#{self.class.canonicalize(code)} HTTP/1.0", "Host: #{HOST}"].join("\r\n") + "\r\n\r\n"
+                    socket = TCPSocket.new @ip, 80
+                    socket.write ["GET /#{self.class.canonicalize(code)} HTTP/1.0", "Host: tinyurl.com"].join("\r\n") + "\r\n\r\n"
                     case (line = socket.gets)
                     when "HTTP/1.0 301 Moved Permanently\r\n"
                         while (line = socket.gets)
