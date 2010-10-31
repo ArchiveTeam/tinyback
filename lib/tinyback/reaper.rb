@@ -8,6 +8,7 @@ module TinyBack
 
     class Reaper
 
+        MAX_TRIES = 3
         FETCH_QUEUE_MIN_SIZE_PER_THREAD = 100
         FETCH_QUEUE_MAX_SIZE_PER_THREAD = 1000
 
@@ -150,18 +151,19 @@ module TinyBack
             give_up = @fetch_mutex.synchronize do
                 if @failed.key? code
                     @failed[code] += 1
-                    if @failed[code] > 5
+                    if @failed[code] >= MAX_TRIES
                         @failed.delete code
                         true
                     else
                         false
                     end
                 else
+                    @failed[code] = 1
                     false
                 end
             end
             if give_up
-                @logger.warn "Code #{code.inspect} failed 5 times, not(!) retrying"
+                @logger.warn "Code #{code.inspect} failed #{MAX_TRIES} times, not(!) retrying"
             else
                 @logger.info "Retrying code #{code.inspect}"
                 @fetch_mutex.synchronize do
