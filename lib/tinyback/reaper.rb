@@ -105,7 +105,7 @@ module TinyBack
                         next
                     end
                     begin
-                        url = Timeout::timeout(10) do
+                        url = Timeout::timeout(30) do
                             service.fetch code
                         end
                         @logger.debug "Code #{code.inspect} found (#{url.inspect})"
