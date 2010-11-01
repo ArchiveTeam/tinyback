@@ -33,6 +33,12 @@ class TC_TinyURL < Test::Unit::TestCase
         end
     end
 
+    def test_blocked_no_location
+        assert_raise BlockedError do
+            @instance.fetch("bvkke")
+        end
+    end
+
     def test_canonical
         assert_equal "test", TinyURL.canonicalize("TEsT") # Lowercase
         assert_equal "test", TinyURL.canonicalize("--te---st--") # Dash

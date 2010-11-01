@@ -111,7 +111,7 @@ module TinyBack
                             when /^X-tiny: (error) [0-9]+\.[0-9]+\r\n/
                             when /X-Powered-By: PHP\/[0-9]\.[0-9]\.[0-9]\r\n/
                             when "\r\n"
-                                break
+                                raise BlockedError.new
                             end
                         end
                         raise FetchError.new "Expected Location, but received #{line.inspect} for code #{code.inspect}"
