@@ -12,9 +12,14 @@ module TinyBack
         FETCH_QUEUE_MIN_SIZE_PER_THREAD = 100
         FETCH_QUEUE_MAX_SIZE_PER_THREAD = 1000
 
-        def initialize service, start, stop, fetch_threads = 10
+        def initialize service, start, stop, fetch_threads = 10, debug = false
             filename = service.to_s.split("::").last + "_" + start + "-" + stop
             @logger = Logger.new(filename + ".log")
+            @logger.level = if debug
+                Logger::DEBUG
+            else
+                Logger::INFO
+            end
             @logger.info "Initializing Reaper"
 
             @service = service
@@ -114,7 +119,7 @@ module TinyBack
                     rescue Services::NoRedirectError
                         @logger.debug "Code #{code.inspect} is unknown to service"
                     rescue Services::BlockedError
-                        @logger.info "Code #{code.inspect} is blocked by service"
+                        @logger.debug "Code #{code.inspect} is blocked by service"
                     rescue Services::FetchError, Errno::ECONNRESET, Errno::ECONNREFUSED, Timeout::Error => e
                         @logger.error "Fetching code #{code.inspect} triggered #{e.inspect}, recycling service, retrying"
                         service = @service.new
