@@ -120,7 +120,7 @@ module TinyBack
                         @logger.debug "Code #{code.inspect} is unknown to service"
                     rescue Services::BlockedError
                         @logger.debug "Code #{code.inspect} is blocked by service"
-                    rescue Services::FetchError, Errno::ECONNRESET, Errno::ECONNREFUSED, Timeout::Error => e
+                    rescue Services::FetchError, Errno::ECONNRESET, Errno::ECONNREFUSED, Errno::ETIMEDOUT, Timeout::Error => e
                         @logger.error "Fetching code #{code.inspect} triggered #{e.inspect}, recycling service, retrying"
                         service = @service.new
                         requeue code
