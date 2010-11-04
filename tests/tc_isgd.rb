@@ -19,6 +19,10 @@ class TC_Isgd < Test::Unit::TestCase
         end
     end
 
+    def test_existant_spam
+        assert_equal "http://pocketexpress.com/assets/img/channels/icn-extras.jpg", @instance.fetch("mBAh")
+    end
+
     def test_canonical
         assert_equal "TEsT", Isgd.canonicalize("TEsT") # Case sensitive
         assert_equal "test", Isgd.canonicalize("test-suite") # Ignore characters after invalid character
