@@ -96,12 +96,19 @@ module TinyBack
 
             #
             # Fetches the given code and returns the long url or raises a
-            # NoRedirectError when the code is not in use yet.
+            # NoRedirectError when the code is not in use yet. Only does a HEAD
+            # request at first and then switches to GET if required, unless get
+            # is set to true.
             #
-            def fetch code
+            def fetch code, get = false
                 begin
                     socket = TCPSocket.new @ip, 80
-                    socket.write ["GET /#{self.class.canonicalize(code)} HTTP/1.0", "Host: tinyurl.com"].join("\r\n") + "\r\n\r\n"
+                    method = if get
+                        "GET"
+                    else
+                        "HEAD"
+                    end
+                    socket.write ["#{method} /#{self.class.canonicalize(code)} HTTP/1.0", "Host: tinyurl.com"].join("\r\n") + "\r\n\r\n"
                     case (line = socket.gets)
                     when "HTTP/1.0 301 Moved Permanently\r\n"
                         while (line = socket.gets)
@@ -118,21 +125,30 @@ module TinyBack
                     when "HTTP/1.0 404 Not Found\r\n"
                         raise NoRedirectError.new
                     when "HTTP/1.0 200 OK\r\n"
-                        socket.gets("\r\n\r\n")
-                        data = socket.gets nil
-                        begin
-                            doc = Hpricot data
-                        rescue Hpricot::ParseError => e
-                            raise FetchError.new "Could not parse HTML data (#{e.inspect})"
+                        if get
+                            socket.gets("\r\n\r\n")
+                            data = socket.gets nil
+                            begin
+                                doc = Hpricot data
+                            rescue Hpricot::ParseError => e
+                                raise FetchError.new "Could not parse HTML data (#{e.inspect})"
+                            end
+                            if doc.at("/html/head/title").innerText == "Redirecting..."
+                                url = doc.at("/html/body").innerText[1..-1]
+                                doc = nil
+                                return url
+                            end
+                            if doc.at("html/body/table/tr/td/h1:last").innerText == "Error: TinyURL redirects to a TinyURL."
+                                url = doc.at("/html/body/table/tr/td/p.intro/a").attributes["href"]
+                                doc = nil
+                                return url
+                            end
+                            doc = nil
+                            raise FetchError.new "Could not parse URL for code #{code.inspect}"
+                        else
+                            socket.close
+                            return fetch(code, true)
                         end
-                        if doc.at("/html/head/title").innerText == "Redirecting..."
-                            return doc.at("/html/body").innerText[1..-1]
-                        end
-                        if doc.at("html/body/table/tr/td/h1:last").innerText == "Error: TinyURL redirects to a TinyURL."
-                            return doc.at("/html/body/table/tr/td/p.intro/a").attributes["href"]
-                        end
-                        doc = nil
-                        raise FetchError.new "Could not parse URL for code #{code.inspect}"
                     when "HTTP/1.0 302 Found\r\n"
                         raise BlockedError.new
                     else
