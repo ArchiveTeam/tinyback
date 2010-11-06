@@ -32,6 +32,18 @@ class TC_Isgd < Test::Unit::TestCase
         assert_equal "http://example.com/", @instance.fetch("gMpD7")
     end
 
+    def test_http_502_error
+        assert_raise BlockedError do
+            @instance.fetch("meIw")
+        end
+    end
+
+    def test_no_html_data
+        assert_raise FetchError do
+            @instance.fetch("ms7x")
+        end
+    end
+
     def test_canonical
         assert_equal "TEsT", Isgd.canonicalize("TEsT") # Case sensitive
         assert_equal "test", Isgd.canonicalize("test-suite") # Ignore characters after invalid character

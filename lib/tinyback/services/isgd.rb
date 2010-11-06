@@ -87,7 +87,7 @@ module TinyBack
                             begin
                                 doc = Hpricot data
                             rescue Hpricot::ParserError => e
-                                raise FetchError.new "Could not parse HTML data #{e.inspect}"
+                                raise FetchError.new "Could not parse HTML data: #{e.inspect}"
                             end
                             begin
                                 if doc.at("/html/head/title").innerText == "is.gd - URL Disabled"
@@ -95,6 +95,8 @@ module TinyBack
                                     return match[1] if match
                                 end
                                 raise FetchError.new "Could not parse URL from HTML"
+                            rescue NoMethodError => e
+                                raise FetchError.new "Could not parse HTML data: #{e.inspect}"
                             ensure
                                 doc = nil
                             end
