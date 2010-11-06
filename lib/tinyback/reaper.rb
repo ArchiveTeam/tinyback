@@ -1,5 +1,4 @@
 require "logger"
-require "msgpack"
 require "timeout"
 require "tinyback/services"
 require "thread"
@@ -35,7 +34,7 @@ module TinyBack
             @fetch_threads.times do
                 @threads << fetch_thread
             end
-            @threads << write_thread(filename + ".mpac")
+            @threads << write_thread(filename + ".txt")
         end
 
         #
@@ -60,9 +59,10 @@ module TinyBack
         def generate_thread start, stop
             Thread.new(start, stop) do |start, stop|
                 @logger.info "Starting generate thread (#{start.inspect} to #{stop.inspect})"
+                Thread.current.priority = -1
                 current = start
                 sleep_interval = 30
-                until current == stop
+                loop do
                     size = @fetch_mutex.synchronize do
                         @fetch_queue.size
                     end
@@ -79,6 +79,7 @@ module TinyBack
                             @fetch_queue = new.shuffle + @fetch_queue
                         end
                         new = nil
+                        break if current == stop
                         sleep_interval -= 1
                         sleep sleep_interval
                     else
@@ -99,6 +100,8 @@ module TinyBack
         def fetch_thread
             Thread.new do
                 @logger.info "Starting fetch thread"
+                Thread.current.priority = -3
+                Thread.pass
                 service = @service.new
                 loop do
                     code = @fetch_mutex.synchronize do
@@ -107,11 +110,11 @@ module TinyBack
                     break if code == :stop
                     if code.nil?
                         @logger.warn "Empty fetch queue caused fetch stall"
-                        sleep 5
+                        Thread.pass
                         next
                     end
                     begin
-                        url = Timeout::timeout(30) do
+                        url = Timeout::timeout(10) do
                             service.fetch code
                         end
                         @logger.debug "Code #{code.inspect} found (#{url.inspect})"
@@ -123,6 +126,8 @@ module TinyBack
                     rescue Services::FetchError, Errno::ECONNRESET, Errno::ECONNREFUSED, Errno::ETIMEDOUT, Timeout::Error => e
                         @logger.error "Fetching code #{code.inspect} triggered #{e.inspect}, recycling service, retrying"
                         service = @service.new
+                        # Clean up the mess of the old service
+                        GC.start
                         requeue code
                     rescue => e
                         @logger.fatal "Code #{code.inspect} triggered #{e.inspect}"
@@ -137,6 +142,7 @@ module TinyBack
         def write_thread filename
             Thread.new(filename) do |filename|
                 @logger.info "Starting write thread"
+                Thread.current.priority = -2
                 stop = @fetch_threads
                 handle = File.open filename, "w"
                 while stop > 0 do
@@ -145,7 +151,7 @@ module TinyBack
                         stop -= 1
                         next
                     end
-                    handle.write [code, url].to_msgpack
+                    handle.write code + "|" + url + "\n"
                 end
                 handle.close
                 @logger.info "Write thread terminated"
