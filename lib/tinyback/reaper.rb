@@ -110,7 +110,7 @@ module TinyBack
                     break if code == :stop
                     if code.nil?
                         @logger.warn "Empty fetch queue caused fetch stall"
-                        Thread.pass
+                        sleep (@fetch_threads / 10)
                         next
                     end
                     begin
