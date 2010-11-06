@@ -1,3 +1,4 @@
+require "hpricot"
 require "socket"
 
 module TinyBack
@@ -5,8 +6,6 @@ module TinyBack
     module Services
 
         class Isgd < Base
-
-            HOST = "is.gd"
 
             #
             # Returns the character set used by this shortener. This function
@@ -44,37 +43,66 @@ module TinyBack
             # This method is not thread-safe.
             #
             def fetch code
+                code = self.class.canonicalize code
                 begin
                     if @socket.nil? or @socket.closed?
-                        @socket = TCPSocket.new HOST, 80
+                        @socket = TCPSocket.new "is.gd", 80
                     end
-                    data =  ["HEAD /#{self.class.canonicalize(code)} HTTP/1.1", "Host: #{HOST}"].join("\r\n") + "\r\n\r\n"
+                    data =  ["HEAD /#{code} HTTP/1.1", "Host: is.gd"].join("\n") + "\n\n"
                     begin
                         @socket.write data
                     rescue Errno::EPIPE
-                        @socket = TCPSocket.new HOST, 80
+                        @socket = TCPSocket.new "is.gd", 80
                         @socket.write data
                     end
-                    case (line = @socket.gets)
-                    when "HTTP/1.1 301 Moved Permanently\r\n"
-                        data = @socket.gets("\r\n\r\n").split("\r\n")
-                        if data[3] == "Connection: close"
-                            @socket = nil
-                        elsif data[3] != "Connection: keep-alive"
-                            raise FetchError.new "No Connection header found at the expected place in headers"
+                    headers = @socket.gets("\r\n\r\n").split("\r\n")
+                    status = headers.shift
+                    begin
+                        case status
+                        when "HTTP/1.1 301 Moved Permanently"
+                            match = headers.last.match /Location: (.*)/
+                            raise FetchError.new "No Location found at the expected place in headers" unless match
+                            return match[1]
+                        when "HTTP/1.1 404 File Not Found"
+                            raise NoRedirectError.new
+                        when "HTTP/1.1 200 OK"
+                            if headers.include? "Connection: close"
+                                @socket.close unless @socket.closed?
+                                @socket = TCPSocket.new "is.gd", 80
+                            end
+                            data = ["GET /#{code} HTTP/1.1", "Host: is.gd"].join("\r\n") + "\r\n\r\n"
+                            @socket.write data
+                            headers = @socket.gets("\r\n\r\n").split("\r\n")
+                            unless (status = headers.shift) == "HTTP/1.1 200 OK"
+                                raise FetchError.new "Status suddenly changed from 200 to #{status}"
+                            end
+                            @socket.gets "\r\n"
+                            data = @socket.gets("\r\n0\r\n\r\n")
+                            data.slice!(-7, 7)
+                            begin
+                                doc = Hpricot data
+                            rescue Hpricot::ParserError => e
+                                raise FetchError.new "Could not parse HTML data #{e.inspect}"
+                            end
+                            begin
+                                if doc.at("/html/head/title").innerText == "is.gd - URL Disabled"
+                                    match = doc.at("/html/body/div[@id='disabled']/p:eq(3)").innerText.match(/^For reference and to help those fighting spam the original destination of this URL is given below \(we strongly recommend you don't visit it since it may damage your PC\): \-(.*)$/)
+                                    return match[1] if match
+                                end
+                                raise FetchError.new "Could not parse URL from HTML"
+                            ensure
+                                doc = nil
+                            end
+                            exit
+                        when nil
+                            raise FetchError.new "Socket unexpectedly closed"
+                        else
+                            raise FetchError.new "Expected 200/301/404, but received #{line.inspect}"
                         end
-                        match = data.last.match /Location: (.*)/
-                        raise FetchError.new "No Location found at the expected place in headers" unless match
-                        return match[1]
-                    when "HTTP/1.1 404 File Not Found\r\n"
-                        @socket.gets "\r\n\r\n"
-                        raise NoRedirectError.new
-                    when nil
-                        @socket = nil
-                        raise FetchError.new "Socket unexpectedly closed"
-                    else
-                        @socket = nil
-                        raise FetchError.new "Expected 301/404, but received #{line.inspect}"
+                    ensure
+                        if headers.include? "Connection: close"
+                            @socket.close unless @socket.closed?
+                        end
                     end
                 end
             end
