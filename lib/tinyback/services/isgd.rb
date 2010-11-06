@@ -55,7 +55,9 @@ module TinyBack
                         @socket = TCPSocket.new "is.gd", 80
                         @socket.write data
                     end
-                    headers = @socket.gets("\r\n\r\n").split("\r\n")
+                    headers = @socket.gets("\r\n\r\n")
+                    raise FetchError.new "Service unexpectedly closed the connection" if headers.nil?
+                    headers = headers.split("\r\n")
                     status = headers.shift
                     begin
                         case status
@@ -72,12 +74,15 @@ module TinyBack
                             end
                             data = ["GET /#{code} HTTP/1.1", "Host: is.gd"].join("\r\n") + "\r\n\r\n"
                             @socket.write data
-                            headers = @socket.gets("\r\n\r\n").split("\r\n")
+                            headers = @socket.gets("\r\n\r\n")
+                            raise FetchError.new "Service unexpectedly closed the connection" if headers.nil?
+                            headers = headers.split("\r\n")
                             unless (status = headers.shift) == "HTTP/1.1 200 OK"
                                 raise FetchError.new "Status suddenly changed from 200 to #{status}"
                             end
-                            @socket.gets "\r\n"
+                            raise FetchError.new "Service unexpectedly closed the connection" if @socket.gets("\r\n").nil?
                             data = @socket.gets("\r\n0\r\n\r\n")
+                            raise FetchError.new "Service unexpectedly closed the connection" if data.nil?
                             data.slice!(-7, 7)
                             begin
                                 doc = Hpricot data
