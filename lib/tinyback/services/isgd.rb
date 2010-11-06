@@ -97,7 +97,7 @@ module TinyBack
                         when nil
                             raise FetchError.new "Socket unexpectedly closed"
                         else
-                            raise FetchError.new "Expected 200/301/404, but received #{line.inspect}"
+                            raise FetchError.new "Expected 200/301/404, but received #{status}"
                         end
                     ensure
                         if headers.include? "Connection: close"
