@@ -151,6 +151,10 @@ module TinyBack
                         stop -= 1
                         next
                     end
+                    if url.include? "\n"
+                        @logger.fatal "Newline in url for code #{code.inspect}"
+                        exit
+                    end
                     handle.write code + "|" + url + "\n"
                 end
                 handle.close
