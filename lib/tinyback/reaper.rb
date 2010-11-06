@@ -107,7 +107,7 @@ module TinyBack
                     break if code == :stop
                     if code.nil?
                         @logger.warn "Empty fetch queue caused fetch stall"
-                        sleep 1
+                        sleep 5
                         next
                     end
                     begin
