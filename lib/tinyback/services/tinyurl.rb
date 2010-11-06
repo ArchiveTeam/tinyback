@@ -67,7 +67,7 @@ module TinyBack
             # is probably only useful for the advance method in the base class.
             #
             def self.charset
-                "abcdefghijklmnopqrstuvwxyz0123456789"
+                "0123456789abcdefghijklmnopqrstuvwxyz"
             end
 
             #

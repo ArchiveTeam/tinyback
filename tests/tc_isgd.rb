@@ -59,11 +59,11 @@ class TC_Isgd < Test::Unit::TestCase
     end
 
     def test_advance
-        assert_equal "b", Isgd.advance("a")
+        assert_equal "1", Isgd.advance("0")
+        assert_equal "a", Isgd.advance("9")
         assert_equal "A", Isgd.advance("z")
-        assert_equal "0", Isgd.advance("Z")
-        assert_equal "aa", Isgd.advance("9")
-        assert_equal "ba", Isgd.advance("a9")
+        assert_equal "00", Isgd.advance("Z")
+        assert_equal "10", Isgd.advance("0Z")
     end
 
 end
