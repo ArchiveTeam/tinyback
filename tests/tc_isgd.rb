@@ -23,6 +23,15 @@ class TC_Isgd < Test::Unit::TestCase
         assert_equal "http://pocketexpress.com/assets/img/channels/icn-extras.jpg", @instance.fetch("mBAh")
     end
 
+    def test_connection_resume
+        assert_equal "http://www.example.org/", @instance.fetch("gmYZc")
+        assert_raise NoRedirectError do
+            @instance.fetch("zzzzzz")
+        end
+        assert_equal "http://pocketexpress.com/assets/img/channels/icn-extras.jpg", @instance.fetch("mBAh")
+        assert_equal "http://example.com/", @instance.fetch("gMpD7")
+    end
+
     def test_canonical
         assert_equal "TEsT", Isgd.canonicalize("TEsT") # Case sensitive
         assert_equal "test", Isgd.canonicalize("test-suite") # Ignore characters after invalid character
