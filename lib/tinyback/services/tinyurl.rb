@@ -136,12 +136,12 @@ module TinyBack
                             if doc.at("/html/head/title").innerText == "Redirecting..."
                                 url = doc.at("/html/body").innerText[1..-1]
                                 doc = nil
-                                return url
+                                return url.chomp("\n")
                             end
                             if doc.at("html/body/table/tr/td/h1:last").innerText == "Error: TinyURL redirects to a TinyURL."
                                 url = doc.at("/html/body/table/tr/td/p.intro/a").attributes["href"]
                                 doc = nil
-                                return url
+                                return url.chomp("\n")
                             end
                             doc = nil
                             raise FetchError.new "Could not parse URL for code #{code.inspect}"
