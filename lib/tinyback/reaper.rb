@@ -8,7 +8,7 @@ module TinyBack
     class Reaper
 
         MAX_TRIES = 3
-        FETCH_QUEUE_MIN_SIZE_PER_THREAD = 100
+        FETCH_QUEUE_MIN_SIZE_PER_THREAD = 250
         FETCH_QUEUE_MAX_SIZE_PER_THREAD = 1000
 
         def initialize service, start, stop, fetch_threads = 10, debug = false
