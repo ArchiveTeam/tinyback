@@ -2,8 +2,8 @@
 #include <string.h>
 
 #include "glib.h"
+#include "shorturl.h"
 
-#define MAX_CODE_LENGTH 6
 #define MAX_DISTANCE 2000000
 
 #define G_SORT_ERROR g_sort_error_quark()
@@ -16,55 +16,6 @@ GQuark g_sort_error_quark(void)
 #define G_SORT_ERROR_FAILED 1 << 0
 #define G_SORT_ERROR_PARSE 1 << 1
 #define G_SORT_ERROR_UNSORTED 1 << 2
-
-struct shorturl {
-    gchar code[MAX_CODE_LENGTH + 1];
-    gchar* url;
-};
-
-gint compare_codes(gchar *a, gchar *b)
-{
-    if(strlen(a) != strlen(b))
-        return strlen(a) - strlen(b);
-
-    guint i;
-    gint diff;
-    for(i = 0; i < strlen(a); i++)
-    {
-        diff = (gint)(g_ascii_isdigit(b[i])) - (gint)(g_ascii_isdigit(a[i]));
-        if(diff)
-            return diff;
-        diff = a[i] - b[i];
-        if(diff)
-            return diff;
-
-        diff = (gint)(g_ascii_islower(b[i])) - (gint)(g_ascii_islower(a[i]));
-        if(diff)
-            return diff;
-        diff = a[i] - b[i];
-        if(diff)
-            return diff;
-
-        diff = (gint)(g_ascii_isupper(b[i])) - (gint)(g_ascii_isupper(a[i]));
-        if(diff)
-            return diff;
-        diff = a[i] - b[i];
-        if(diff)
-            return diff;
-    }
-
-    return 0;
-}
-
-gint compare_shorturls(gconstpointer *ptr_a, gconstpointer *ptr_b)
-{
-    gchar *a, *b;
-
-    a = ((struct shorturl *)ptr_a)->code;
-    b = ((struct shorturl *)ptr_b)->code;
-
-    return compare_codes(a, b);
-}
 
 guint read_shorturls(GIOChannel *in, GArray *data, guint count, GError **error_ptr)
 {
