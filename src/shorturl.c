@@ -1,6 +1,18 @@
 #include <string.h>
+#include <stdio.h>
 
 #include "shorturl.h"
+
+static enum code_order determine_code_order(gchar c)
+{
+    if('0' <= c && c <= '9')
+        return ASCII_NUMBER;
+    else if('a' <= c && c <= 'z')
+        return ASCII_LOWER;
+    else if('A' <= c && c <= 'Z')
+        return ASCII_UPPER;
+    return ASCII_OTHER;
+}
 
 gint compare_codes(gchar *a, gchar *b)
 {
@@ -8,29 +20,19 @@ gint compare_codes(gchar *a, gchar *b)
         return strlen(a) - strlen(b);
 
     guint i;
-    gint diff;
     for(i = 0; i < strlen(a); i++)
     {
-        diff = (gint)(g_ascii_isdigit(b[i])) - (gint)(g_ascii_isdigit(a[i]));
-        if(diff)
-            return diff;
-        diff = a[i] - b[i];
-        if(diff)
-            return diff;
+        enum code_order code_order_a, code_order_b;
 
-        diff = (gint)(g_ascii_islower(b[i])) - (gint)(g_ascii_islower(a[i]));
-        if(diff)
-            return diff;
-        diff = a[i] - b[i];
-        if(diff)
-            return diff;
+        code_order_a = determine_code_order(a[i]);
+        code_order_b = determine_code_order(b[i]);
 
-        diff = (gint)(g_ascii_isupper(b[i])) - (gint)(g_ascii_isupper(a[i]));
-        if(diff)
-            return diff;
-        diff = a[i] - b[i];
-        if(diff)
-            return diff;
+        if(code_order_a < code_order_b)
+            return -1;
+        else if(code_order_a > code_order_b)
+            return 1;
+        else if(a[i] != b[i])
+            return a[i] - b[i];
     }
 
     return 0;
@@ -44,4 +46,15 @@ gint compare_shorturls(gconstpointer *ptr_a, gconstpointer *ptr_b)
     b = ((struct shorturl *)ptr_b)->code;
 
     return compare_codes(a, b);
+}
+
+void free_shorturl_data(struct shorturl shorturl)
+{
+    g_free(shorturl.url);
+}
+
+void free_shorturl(struct shorturl *shorturl)
+{
+    free_shorturl_data(*shorturl);
+    g_free(shorturl);
 }

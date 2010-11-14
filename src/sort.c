@@ -4,7 +4,7 @@
 #include "glib.h"
 #include "shorturl.h"
 
-#define MAX_DISTANCE 2000000
+#define MAX_DISTANCE 500000
 
 #define G_SORT_ERROR g_sort_error_quark()
 
@@ -87,7 +87,7 @@ GArray *write_file(GIOChannel *out, GArray *data, guint count, gchar *last_code,
         switch(g_io_channel_write_chars(out, buffer->str, -1, &bytes_written, &error))
         {
             case G_IO_STATUS_NORMAL:
-                g_free(shorturl.url);
+                free_shorturl_data(shorturl);
                 break;
             case G_IO_STATUS_EOF:
             case G_IO_STATUS_ERROR:
@@ -211,7 +211,6 @@ int main(int argc, char* argv[])
                 return 1;
             }
         }
-        printf("Loop: %i\n", read);
     } while(read > 0);
 
     data = write_file(out, data, data->len, last_code, &error);
