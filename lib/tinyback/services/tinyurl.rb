@@ -134,14 +134,14 @@ module TinyBack
                                 raise FetchError.new "Could not parse HTML data (#{e.inspect})"
                             end
                             if doc.at("/html/head/title").innerText == "Redirecting..."
-                                url = doc.at("/html/body").innerText[1..-1]
+                                url = doc.at("/html/body").innerText
                                 doc = nil
-                                return url.chomp("\n")
+                                return url.strip unless url.nil?
                             end
                             if doc.at("html/body/table/tr/td/h1:last").innerText == "Error: TinyURL redirects to a TinyURL."
                                 url = doc.at("/html/body/table/tr/td/p.intro/a").attributes["href"]
                                 doc = nil
-                                return url.chomp("\n")
+                                return url.chomp("\n") unless url.nil?
                             end
                             doc = nil
                             raise FetchError.new "Could not parse URL for code #{code.inspect}"
