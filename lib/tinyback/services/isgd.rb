@@ -62,7 +62,7 @@ module TinyBack
                     begin
                         case status
                         when "HTTP/1.1 301 Moved Permanently"
-                            match = headers.last.match /Location: (.*)/
+                            match = headers.last.match /^Location: (.*)$/
                             raise FetchError.new "No Location found at the expected place in headers" unless match
                             return match[1]
                         when "HTTP/1.1 404 File Not Found"

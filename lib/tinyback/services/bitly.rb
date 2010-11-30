@@ -69,13 +69,13 @@ module TinyBack
                     begin
                         case status
                         when "HTTP/1.1 301 Moved"
-                            match = headers[-3].match /Location: (.*)/
+                            match = headers[-3].match /^Location: (.*)$/
                             raise FetchError.new "No Location found at the expected place in headers" unless match
                             return match[1]
                         when "HTTP/1.1 404 Not Found"
                             raise NoRedirectError.new
                         when "HTTP/1.1 302 Found"
-                            match = headers[-3].match /Location: (.*)/
+                            match = headers[-3].match /^Location: (.*)$/
                             raise FetchError.new "No Location found at the expected place in headers" unless match
                             target = URI.parse match[1]
                             raise FetchError.new "302 Found but unknown redirect URL" unless target.scheme == "http" and target.host == "bit.ly" and target.path == "/a/warning"
