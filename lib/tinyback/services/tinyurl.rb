@@ -11,55 +11,10 @@ module TinyBack
 
         class TinyURL < Base
 
-            class IPManager
-
-                include Singleton
-
-                def initialize
-                    @mutex = Mutex.new
-                end
-
-                def get_ip
-                    @mutex.synchronize do
-                        if @time.nil? || @time + 300 < Time.now
-                            @time = Time.now
-                            @ips = resolve
-                        end
-                        ip = @ips.pop
-                        @ips.unshift ip
-                        ip
-                    end
-                end
-
-                private
-
-                def resolve
-                    nameservers = []
-                    Resolv::DNS.open do |resolv|
-                        resolv.getresources("tinyurl.com", Resolv::DNS::Resource::IN::NS).each do |nameserver|
-                            nameservers << nameserver.name.to_s
-                        end
-                    end
-
-                    ips = []
-                    nameservers.each do |nameserver|
-                        Resolv::DNS.open(:nameserver => nameserver) do |resolv|
-                            resolv.each_address("tinyurl.com") do |ip|
-                                ips << ip.to_s
-                            end
-                            resolv.each_address("www.tinyurl.com") do |ip|
-                                ips << ip.to_s
-                            end
-                        end
-                    end
-
-                    ips.uniq
-                end
-
-            end
+            @@ip_manager = IPManager.new "tinyurl.com", "www.tinyurl.com"
 
             def initialize
-                @ip = IPManager.instance.get_ip
+                @ip = @@ip_manager.get_ip
             end
 
             #

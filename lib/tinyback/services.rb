@@ -1,3 +1,5 @@
+require "tinyback/ip_manager"
+
 module TinyBack
 
     module Services
