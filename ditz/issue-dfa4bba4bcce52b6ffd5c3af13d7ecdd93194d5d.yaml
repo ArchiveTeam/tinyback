@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Timeout::timeout() is troublesome
+desc: Timeout::timeout() sometimes kills a thread outside of it's catch clause which causes the whole reaper to die.
+type: :bugfix
+component: Reaper
+release: 
+reporter: David Triendl <david@triendl.name>
+status: :unstarted
+disposition: 
+creation_time: 2010-12-02 13:59:31.092731 Z
+references: []
+
+id: dfa4bba4bcce52b6ffd5c3af13d7ecdd93194d5d
+log_events: 
+- - 2010-12-02 13:59:31.632226 Z
+  - David Triendl <david@triendl.name>
+  - created
+  - ""
