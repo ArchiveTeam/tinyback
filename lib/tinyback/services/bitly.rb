@@ -40,6 +40,7 @@ module TinyBack
             #
             def self.canonicalize code
                 raise InvalidCodeError.new unless code.match /^([A-Za-z0-9\-_]+)$/
+                raise InvalidCodeError.new if ["api", "pro"].include? code
                 code
             end
 

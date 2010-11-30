@@ -30,6 +30,12 @@ class TC_Bitly < Test::Unit::TestCase
         assert_raise InvalidCodeError do # Too short
             Bitly.canonicalize ""
         end
+        assert_raise InvalidCodeError do # Keyword
+            Bitly.canonicalize "api"
+        end
+        assert_raise InvalidCodeError do # Keyword
+            Bitly.canonicalize "pro"
+        end
     end
 
     def test_advance
