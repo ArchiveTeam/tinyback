@@ -5,8 +5,8 @@ type: :bugfix
 component: Reaper
 release: 
 reporter: David Triendl <david@triendl.name>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2010-12-02 13:59:31.092731 Z
 references: []
 
@@ -16,3 +16,11 @@ log_events:
   - David Triendl <david@triendl.name>
   - created
   - ""
+- - 2010-12-02 20:49:22.130999 Z
+  - David Triendl <david@triendl.name>
+  - changed status from unstarted to in_progress
+  - Trying to avoid Thread.raise.
+- - 2010-12-02 21:06:28.607311 Z
+  - David Triendl <david@triendl.name>
+  - closed with disposition fixed
+  - Using Thread.kill instead of Timeout's Thread.raise now, which avoid the proublem with uncaught exceptions etc.

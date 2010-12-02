@@ -1,11 +1,13 @@
 require "logger"
-require "timeout"
 require "tinyback/services"
 require "thread"
 
 module TinyBack
 
     class Reaper
+
+        class FetchTimeout < RuntimeError
+        end
 
         MAX_TRIES = 3
         FETCH_QUEUE_MIN_SIZE_PER_THREAD = 250
@@ -113,24 +115,34 @@ module TinyBack
                         sleep (@fetch_threads / 10)
                         next
                     end
-                    begin
-                        url = Timeout::timeout(10) do
-                            service.fetch code
+                    child = Thread.new(Thread.current, code) do |mother, code|
+                        begin
+                            Thread.current[:url] = service.fetch code
+                        rescue => e
+                            Thread.current[:error] = e
                         end
-                        @logger.debug "Code #{code.inspect} found (#{url.inspect})"
-                        @write_queue.push [code, url]
-                    rescue Services::NoRedirectError
+                        Thread.current[:terminated] = true
+                        mother.run
+                    end
+                    sleep 10
+                    child.kill!
+                    child[:error] = FetchTimeout.new unless child[:terminated]
+                    case child[:error]
+                    when nil
+                        @logger.debug "Code #{code.inspect} found (#{child[:url].inspect})"
+                        @write_queue.push [code, child[:url]]
+                    when Services::NoRedirectError
                         @logger.debug "Code #{code.inspect} is unknown to service"
-                    rescue Services::BlockedError
+                    when Services::BlockedError
                         @logger.debug "Code #{code.inspect} is blocked by service"
-                    rescue Services::FetchError, Errno::ECONNRESET, Errno::ECONNREFUSED, Errno::ETIMEDOUT, Timeout::Error => e
-                        @logger.error "Fetching code #{code.inspect} triggered #{e.inspect}, recycling service, retrying"
+                    when Services::FetchError, Errno::ECONNRESET, Errno::ECONNREFUSED, Errno::ETIMEDOUT, FetchTimeout
+                        @logger.error "Fetching code #{code.inspect} triggered #{child[:error].inspect}, recycling service, retrying"
                         service = @service.new
                         # Clean up the mess of the old service
                         GC.start
                         requeue code
-                    rescue => e
-                        @logger.fatal "Code #{code.inspect} triggered #{e.inspect}"
+                    else
+                        @logger.fatal "Code #{code.inspect} triggered #{child[:error].inspect}"
                         exit
                     end
                 end
