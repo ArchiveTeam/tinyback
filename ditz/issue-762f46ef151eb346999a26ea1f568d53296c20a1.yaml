@@ -1,0 +1,20 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: test_nonexistant(TC_Trim)
+desc: |-
+  test_nonexistant(TC_Trim) [./tests/tc_trim.rb:17]:
+  <TinyBack::Services::NoRedirectError> exception expected but none was thrown.
+type: :bugfix
+component: Services
+release: Runable version
+reporter: David Triendl <david@triendl.name>
+status: :unstarted
+disposition: 
+creation_time: 2010-12-04 23:38:32.320023 Z
+references: []
+
+id: 762f46ef151eb346999a26ea1f568d53296c20a1
+log_events: 
+- - 2010-12-04 23:38:33.103850 Z
+  - David Triendl <david@triendl.name>
+  - created
+  - ""

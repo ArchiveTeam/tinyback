@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Stop trying after getting blocked by a service
+desc: ""
+type: :feature
+component: tinyback
+release: Runable version
+reporter: David Triendl <david@triendl.name>
+status: :unstarted
+disposition: 
+creation_time: 2010-12-04 23:17:02.047449 Z
+references: []
+
+id: 18a3d5477d9b2be510b26a52562d6ef6b1b433a8
+log_events: 
+- - 2010-12-04 23:17:02.783340 Z
+  - David Triendl <david@triendl.name>
+  - created
+  - ""

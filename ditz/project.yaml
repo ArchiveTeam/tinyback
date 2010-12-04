@@ -10,5 +10,13 @@ components:
   name: Reaper
 - !ditz.rubyforge.org,2008-03-06/component 
   name: Postprocessing
-releases: []
-
+releases: 
+- !ditz.rubyforge.org,2008-03-06/release 
+  name: Runable version
+  status: :unreleased
+  release_time: 
+  log_events: 
+  - - 2010-12-04 23:13:21.493667 Z
+    - David Triendl <david@triendl.name>
+    - created
+    - This milestone tracks bug that are so serious that all scraping operations have to be put on hold until they are fixed.
