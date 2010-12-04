@@ -133,7 +133,7 @@ module TinyBack
                         @write_queue.push [code, child[:url]]
                     when Services::NoRedirectError
                         @logger.debug "Code #{code.inspect} is unknown to service"
-                    when Services::BlockedError
+                    when Services::CodeBlockedError
                         @logger.debug "Code #{code.inspect} is blocked by service"
                     when Services::FetchError, Errno::ECONNRESET, Errno::ECONNREFUSED, Errno::ETIMEDOUT, FetchTimeout
                         @logger.error "Fetching code #{code.inspect} triggered #{child[:error].inspect}, recycling service, retrying"

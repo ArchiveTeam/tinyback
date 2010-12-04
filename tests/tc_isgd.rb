@@ -33,7 +33,7 @@ class TC_Isgd < Test::Unit::TestCase
     end
 
     def test_http_502_error
-        assert_raise BlockedError do
+        assert_raise CodeBlockedError do
             @instance.fetch("meIw")
         end
     end

@@ -101,7 +101,7 @@ module TinyBack
                                 doc = nil
                             end
                         when "HTTP/1.1 502 Bad Gateway"
-                            raise BlockedError.new
+                            raise CodeBlockedError.new
                         when nil
                             raise FetchError.new "Socket unexpectedly closed"
                         else

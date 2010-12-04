@@ -16,7 +16,7 @@ module TinyBack
         class NoRedirectError < ServiceError
         end
 
-        class BlockedError < ServiceError
+        class CodeBlockedError < ServiceError
         end
 
         class Base
