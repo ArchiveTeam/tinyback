@@ -5,8 +5,8 @@ type: :feature
 component: tinyback
 release: Runable version
 reporter: David Triendl <david@triendl.name>
-status: :in_progress
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2010-12-04 23:17:02.047449 Z
 references: []
 
@@ -19,4 +19,8 @@ log_events:
 - - 2010-12-04 23:28:56.630536 Z
   - David Triendl <david@triendl.name>
   - changed status from unstarted to in_progress
+  - ""
+- - 2010-12-05 01:29:45.947164 Z
+  - David Triendl <david@triendl.name>
+  - closed with disposition fixed
   - ""

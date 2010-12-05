@@ -25,17 +25,26 @@ module TinyBack
 
             @service = service
             @fetch_threads = fetch_threads
-
-            @fetch_queue = []
-            @fetch_mutex = Mutex.new
-            @write_queue = Queue.new
-            @failed = {}
-
             @threads = []
+
+            # Monitor thread
+            @stats_mutex = Mutex.new
+            @blocks = @fetches = 0
+            @threads << monitor_thread
+
+            # Generate thread
+            @fetch_mutex = Mutex.new
+            @fetch_queue = []
             @threads << generate_thread(start, stop)
+
+            # Fetch threads
+            @failed = {}
+            @write_queue = Queue.new
             @fetch_threads.times do
                 @threads << fetch_thread
             end
+
+            # Write thread
             @threads << write_thread(filename + ".txt")
         end
 
@@ -47,9 +56,40 @@ module TinyBack
                 thread.join
             end
             @logger.info "Reaper finished (this is the last line)"
+            exit
         end
 
         private
+
+        #
+        # Creates a new monitor thread. The monitor thread is responsible for
+        # keeping track of statistics.
+        #
+        def monitor_thread
+            Thread.new do
+                loop do
+                    sleep 120
+                    block_rate = @stats_mutex.synchronize do
+                        fetches = @fetch_mutex.synchronize do
+                            fetches = @fetches
+                            @fetches = 0
+                            fetches
+                        end
+                        if fetches > 0
+                            blocks = @blocks
+                            @blocks = 0
+                            blocks.to_f/fetches
+                        else
+                            0
+                        end
+                    end
+                    if block_rate >= 0.1
+                        @logger.fatal "Block rate is too high (#{block_rate*100}%)"
+                        exit 1
+                    end
+                end
+            end
+        end
 
         #
         # Creates a new generate thread. The generate thread fills the fetch
@@ -107,7 +147,9 @@ module TinyBack
                 service = @service.new
                 loop do
                     code = @fetch_mutex.synchronize do
-                        @fetch_queue.pop
+                        code = @fetch_queue.pop
+                        @fetches += 1 unless code.nil?
+                        code
                     end
                     break if code == :stop
                     if code.nil?
@@ -135,6 +177,12 @@ module TinyBack
                         @logger.debug "Code #{code.inspect} is unknown to service"
                     when Services::CodeBlockedError
                         @logger.debug "Code #{code.inspect} is blocked by service"
+                    when Services::ServiceBlockedError
+                        @logger.info "Service is blocking TinyBack"
+                        @stats_mutex.synchronize do
+                            @blocks += 1
+                        end
+                        requeue code
                     when Services::FetchError, Errno::ECONNRESET, Errno::ECONNREFUSED, Errno::ETIMEDOUT, FetchTimeout
                         @logger.error "Fetching code #{code.inspect} triggered #{child[:error].inspect}, recycling service, retrying"
                         service = @service.new
