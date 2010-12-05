@@ -10,14 +10,18 @@ module TinyBack
         class FetchError < ServiceError
         end
 
+        class ServiceBlockedError < FetchError
+        end
+
         class InvalidCodeError < ServiceError
         end
 
         class NoRedirectError < ServiceError
         end
 
-        class BlockedError < ServiceError
+        class CodeBlockedError < ServiceError
         end
+
 
         class Base
 

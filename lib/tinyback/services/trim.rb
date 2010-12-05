@@ -49,6 +49,8 @@ module TinyBack
                     headers = socket.gets nil
                     raise FetchError.new "Service unexpectedly closed the connection" if headers.nil?
 
+                    raise ServiceBlockedError if headers == "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n<html>\n<head>\n  <title>TR.IM NOT AVAILABLE</title>\n</head>\n<body>\n  TR.IM SERVERS NOT AVAILABLE\n</body>\n</html>\n\n"
+
                     headers = headers.split "\r\n"
                     status = headers.shift
                     raise FetchError.new "Expected 200/301/302/404, but received #{status.inspect}" unless status == "HTTP/1.1 301 Moved Permanently"

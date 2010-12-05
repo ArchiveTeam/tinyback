@@ -65,20 +65,6 @@ module TinyBack
                     end
                     socket.write ["#{method} /#{self.class.canonicalize(code)} HTTP/1.0", "Host: tinyurl.com"].join("\r\n") + "\r\n\r\n"
                     case (line = socket.gets)
-                    when "HTTP/1.0 301 Moved Permanently\r\n"
-                        while (line = socket.gets)
-                            case line
-                            when /^Location: (.*)\r\n/
-                                return $1
-                            when /^X-tiny: (error) [0-9]+\.[0-9]+\r\n/
-                            when /X-Powered-By: PHP\/[0-9]\.[0-9]\.[0-9]\r\n/
-                            when "\r\n"
-                                raise BlockedError.new
-                            end
-                        end
-                        raise FetchError.new "Expected Location, but received #{line.inspect} for code #{code.inspect}"
-                    when "HTTP/1.0 404 Not Found\r\n"
-                        raise NoRedirectError.new
                     when "HTTP/1.0 200 OK\r\n"
                         if get
                             socket.gets("\r\n\r\n")
@@ -104,8 +90,24 @@ module TinyBack
                             socket.close
                             return fetch(code, true)
                         end
+                    when "HTTP/1.0 301 Moved Permanently\r\n"
+                        while (line = socket.gets)
+                            case line
+                            when /^Location: (.*)\r\n/
+                                return $1
+                            when /^X-tiny: (error) [0-9]+\.[0-9]+\r\n/
+                            when /X-Powered-By: PHP\/[0-9]\.[0-9]\.[0-9]\r\n/
+                            when "\r\n"
+                                raise CodeBlockedError.new
+                            end
+                        end
+                        raise FetchError.new "Expected Location, but received #{line.inspect} for code #{code.inspect}"
                     when "HTTP/1.0 302 Found\r\n"
-                        raise BlockedError.new
+                        raise CodeBlockedError.new
+                    when "HTTP/1.0 403 Forbidden\r\n"
+                        raise ServiceBlockedError.new
+                    when "HTTP/1.0 404 Not Found\r\n"
+                        raise NoRedirectError.new
                     else
                         raise FetchError.new "Expected 200/301/302/404, but received #{line.inspect} for code #{code.inspect}"
                     end

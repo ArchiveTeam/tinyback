@@ -34,13 +34,13 @@ class TC_TinyURL < Test::Unit::TestCase
     end
 
     def test_blocked
-        assert_raise BlockedError do
+        assert_raise CodeBlockedError do
             @instance.fetch("dick")
         end
     end
 
     def test_blocked_no_location
-        assert_raise BlockedError do
+        assert_raise CodeBlockedError do
             @instance.fetch("bvkke")
         end
     end

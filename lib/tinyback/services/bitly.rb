@@ -72,8 +72,6 @@ module TinyBack
                             match = headers[-3].match /^Location: (.*)$/
                             raise FetchError.new "No Location found at the expected place in headers" unless match
                             return match[1]
-                        when "HTTP/1.1 404 Not Found"
-                            raise NoRedirectError.new
                         when "HTTP/1.1 302 Found"
                             match = headers[-3].match /^Location: (.*)$/
                             raise FetchError.new "No Location found at the expected place in headers" unless match
@@ -83,10 +81,14 @@ module TinyBack
                             raise FetchError.new "Code mismatch on 302 Found" unless target["hash"].first == code
                             raise FetchError.new "No URL given" unless target.key? "url"
                             return target["url"].first
+                        when "HTTP/1.1 403 Forbidden"
+                            raise ServiceBlockedError.new
+                        when "HTTP/1.1 404 Not Found"
+                            raise NoRedirectError.new
                         when nil
                             raise FetchError.new "Socket unexpectedly closed"
                         else
-                            raise FetchError.new "Expected 301/302/404, but received #{status}"
+                            raise FetchError.new "Expected 301/302/404, but received #{status.inspect}"
                         end
                     ensure
                         if headers.include? "Connection: close"
