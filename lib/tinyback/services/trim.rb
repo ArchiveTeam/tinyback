@@ -55,7 +55,7 @@ module TinyBack
 
                     match = headers[-5].match /^Location: (.*)$/
                     raise FetchError.new "No Location found at the expected place in headers" unless match
-                    raise NoRedirectError.new if match[1] == "http://localhost:/"
+                    raise NoRedirectError.new if match[1] == "http://tr.im"
                     match[1]
                 ensure
                     socket.close if socket and not socket.closed?

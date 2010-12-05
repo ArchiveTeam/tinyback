@@ -7,8 +7,8 @@ type: :bugfix
 component: Services
 release: Runable version
 reporter: David Triendl <david@triendl.name>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2010-12-04 23:38:32.320023 Z
 references: []
 
@@ -17,4 +17,12 @@ log_events:
 - - 2010-12-04 23:38:33.103850 Z
   - David Triendl <david@triendl.name>
   - created
+  - ""
+- - 2010-12-05 00:44:34.317454 Z
+  - David Triendl <david@triendl.name>
+  - changed status from unstarted to in_progress
+  - ""
+- - 2010-12-05 00:50:41.645581 Z
+  - David Triendl <david@triendl.name>
+  - closed with disposition fixed
   - ""
