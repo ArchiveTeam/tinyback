@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Add tiny.cc
+desc: Add http://tiny.cc/ as service.
+type: :feature
+component: Services
+release: 
+reporter: David Triendl <david@triendl.name>
+status: :unstarted
+disposition: 
+creation_time: 2010-12-07 18:59:56.872665 Z
+references: []
+
+id: 53275eabe3c7fa717f478eafea6a248c1d3807c1
+log_events: 
+- - 2010-12-07 18:59:57.548525 Z
+  - David Triendl <david@triendl.name>
+  - created
+  - ""
