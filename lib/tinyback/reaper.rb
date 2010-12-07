@@ -104,6 +104,7 @@ module TinyBack
                 Thread.current.priority = -1
                 current = start
                 sleep_interval = 30
+                first_sleep = true
                 loop do
                     size = @fetch_mutex.synchronize do
                         @fetch_queue.size
@@ -124,8 +125,10 @@ module TinyBack
                         break if current == stop
                         sleep_interval -= 1
                         sleep sleep_interval
+                        first_sleep = true
                     else
-                        sleep_interval += 1
+                        sleep_interval += 1 if first_sleep
+                        first_sleep = false
                         sleep 1
                     end
                 end
