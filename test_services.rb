@@ -16,7 +16,7 @@ ObjectSpace.each_object(Class) do |obj|
         Thread.current[:status] = "ok"
         service = klass.new
         begin
-            service.fetch "0"
+            service.fetch "a"
         rescue TinyBack::Services::NoRedirectError
         rescue TinyBack::Services::ServiceBlockedError
             Thread.current[:status] = "blocked"
