@@ -1,6 +1,4 @@
 require "hpricot"
-require "resolv"
-require "singleton"
 require "socket"
 
 Hpricot.buffer_size = 131072
