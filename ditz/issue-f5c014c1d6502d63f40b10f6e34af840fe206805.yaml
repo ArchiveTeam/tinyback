@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Use better test system
+desc: Currently there is a lot of duplicated code in the tests for each Service. Also, the tests are very slow (mostly because of the IPManager DNS requests) and even for changes to one service only, all tests have to run. Using a self-crafted test system (possibly with multi-threading) would be a lot faster and easier to use.
+type: :feature
+component: tinyback
+release: 
+reporter: David Triendl <david@triendl.name>
+status: :unstarted
+disposition: 
+creation_time: 2011-01-28 12:27:21.733382 Z
+references: []
+
+id: f5c014c1d6502d63f40b10f6e34af840fe206805
+log_events: 
+- - 2011-01-28 12:27:22.529053 Z
+  - David Triendl <david@triendl.name>
+  - created
+  - ""

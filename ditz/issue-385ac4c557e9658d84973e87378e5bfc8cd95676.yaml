@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Circumvent tinyurl.com blocking
+desc: TinyURL blocks the crawler when it requests too many non-existant URLs. Find a way to circumvent this.
+type: :task
+component: Services
+release: 
+reporter: David Triendl <david@triendl.name>
+status: :unstarted
+disposition: 
+creation_time: 2011-01-28 12:31:45.264787 Z
+references: []
+
+id: 385ac4c557e9658d84973e87378e5bfc8cd95676
+log_events: 
+- - 2011-01-28 12:32:33.196594 Z
+  - David Triendl <david@triendl.name>
+  - created
+  - http://i55.tinypic.com/j5bia9.jpg

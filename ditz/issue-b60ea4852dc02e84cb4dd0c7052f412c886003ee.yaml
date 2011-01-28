@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Fix is.gd
+desc: is.gd switched to a new software revision which breaks Services::Isgd. They also allow underscores now.
+type: :bugfix
+component: Services
+release: 
+reporter: David Triendl <david@triendl.name>
+status: :unstarted
+disposition: 
+creation_time: 2011-01-28 12:25:16.696648 Z
+references: []
+
+id: b60ea4852dc02e84cb4dd0c7052f412c886003ee
+log_events: 
+- - 2011-01-28 12:25:17.540637 Z
+  - David Triendl <david@triendl.name>
+  - created
+  - ""

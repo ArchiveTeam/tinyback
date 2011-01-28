@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Add vb.ly/vbly.us
+desc: Since Lybia seized their domain vb.ly they are using vbly.us. Seems quite unstable to me.
+type: :feature
+component: Services
+release: 
+reporter: David Triendl <david@triendl.name>
+status: :unstarted
+disposition: 
+creation_time: 2011-01-28 12:28:35.312627 Z
+references: []
+
+id: 1cc8c338383c8c5e8cade329dabffe23d0467a6d
+log_events: 
+- - 2011-01-28 12:28:35.964464 Z
+  - David Triendl <david@triendl.name>
+  - created
+  - ""
