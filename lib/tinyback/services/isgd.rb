@@ -12,7 +12,7 @@ module TinyBack
             # is probably only useful for the advance method in the base class.
             #
             def self.charset
-                "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"
             end
 
             #
@@ -31,9 +31,8 @@ module TinyBack
             # The canonical version may not be longer than 6 characters at the moment.
             #
             def self.canonicalize code
-                match = code.match /^([A-Za-z0-9]+)/
+                match = code.match /^([A-Za-z0-9_]+)/
                 raise InvalidCodeError.new unless match
-                raise InvalidCodeError.new if match[1].length > 6
                 match[1]
             end
 
@@ -65,7 +64,7 @@ module TinyBack
                             match = headers.last.match /^Location: (.*)$/
                             raise FetchError.new "No Location found at the expected place in headers" unless match
                             return match[1]
-                        when "HTTP/1.1 404 File Not Found"
+                        when "HTTP/1.1 404 Not Found"
                             raise NoRedirectError.new
                         when "HTTP/1.1 200 OK"
                             if headers.include? "Connection: close"
@@ -90,7 +89,7 @@ module TinyBack
                                 raise FetchError.new "Could not parse HTML data: #{e.inspect}"
                             end
                             begin
-                                if doc.at("/html/head/title").innerText == "is.gd - URL Disabled"
+                                if doc.at("/html/head/title").innerText == "is.gd - URL disabled"
                                     match = doc.at("/html/body/div[@id='disabled']/p:eq(3)").innerText.match(/^For reference and to help those fighting spam the original destination of this URL is given below \(we strongly recommend you don't visit it since it may damage your PC\): \-(.*)$/)
                                     return match[1] if match
                                 end

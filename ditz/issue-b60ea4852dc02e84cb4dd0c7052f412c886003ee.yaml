@@ -5,8 +5,8 @@ type: :bugfix
 component: Services
 release: 
 reporter: David Triendl <david@triendl.name>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2011-01-28 12:25:16.696648 Z
 references: []
 
@@ -16,3 +16,11 @@ log_events:
   - David Triendl <david@triendl.name>
   - created
   - ""
+- - 2011-01-28 13:26:41.652602 Z
+  - David Triendl <david@triendl.name>
+  - changed status from unstarted to in_progress
+  - ""
+- - 2011-01-28 13:46:59.804952 Z
+  - David Triendl <david@triendl.name>
+  - closed with disposition fixed
+  - Only minor changes. The biggest one is that http://is.gd/ms7x can now be fetched (returns a malformed URL that must have slipped through is.gd's defences).
