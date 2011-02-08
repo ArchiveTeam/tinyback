@@ -55,7 +55,7 @@ module TinyBack
                     if @socket.nil? or @socket.closed?
                         @socket = TCPSocket.new @ip, 80
                     end
-                    data =  ["HEAD /#{code} HTTP/1.1", "Host: j.mp", "Cookie: _bit="].join("\n") + "\n\n"
+                    data =  ["HEAD /#{code} HTTP/1.1", "Host: j.mp", "Cookie: _bit=0"].join("\n") + "\n\n"
                     begin
                         @socket.write data
                     rescue Errno::EPIPE
