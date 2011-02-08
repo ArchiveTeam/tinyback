@@ -80,7 +80,7 @@ module TinyBack
                             target = CGI.parse target.query
                             raise FetchError.new "Code mismatch on 302 Found" unless target["hash"].first == code
                             raise FetchError.new "No URL given" unless target.key? "url"
-                            return target["url"].first
+                            return target["url"].first.strip
                         when "HTTP/1.1 403 Forbidden"
                             raise ServiceBlockedError.new
                         when "HTTP/1.1 404 Not Found"

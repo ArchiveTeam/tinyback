@@ -21,6 +21,8 @@ class TC_Bitly < Test::Unit::TestCase
 
     def test_existant_302
         assert_equal "http://parent-directory.com", @instance.fetch("dick")
+        assert_equal "http://tr.im/2j38", @instance.fetch("O4q")
+        assert_equal "http://www.infocart.jp/t/37940/shinshin96/", @instance.fetch("m1SXT") # Trailing whitespace
     end
 
     def test_invalid
