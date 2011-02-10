@@ -22,6 +22,9 @@ gint compare_codes(gchar *a, gchar *b)
     guint i;
     for(i = 0; i < strlen(a); i++)
     {
+        if(a[i] == b[i])
+            continue;
+
         enum code_order code_order_a, code_order_b;
 
         code_order_a = determine_code_order(a[i]);
@@ -31,7 +34,7 @@ gint compare_codes(gchar *a, gchar *b)
             return -1;
         else if(code_order_a > code_order_b)
             return 1;
-        else if(a[i] != b[i])
+        else
             return a[i] - b[i];
     }
 
