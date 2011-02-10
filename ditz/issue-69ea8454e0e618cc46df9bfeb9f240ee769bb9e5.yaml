@@ -5,8 +5,8 @@ type: :bugfix
 component: Reaper
 release: Runable version
 reporter: David Triendl <david@triendl.name>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2011-01-31 13:30:59.545926 Z
 references: []
 
@@ -16,3 +16,11 @@ log_events:
   - David Triendl <david@triendl.name>
   - created
   - ""
+- - 2011-02-10 05:18:08.856542 Z
+  - David Triendl <david@triendl.name>
+  - changed status from unstarted to in_progress
+  - ""
+- - 2011-02-10 05:18:36.340564 Z
+  - David Triendl <david@triendl.name>
+  - closed with disposition fixed
+  - Ugly hack, but it works for now.

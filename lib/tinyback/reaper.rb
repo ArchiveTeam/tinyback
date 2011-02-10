@@ -30,7 +30,7 @@ module TinyBack
             # Monitor thread
             @stats_mutex = Mutex.new
             @blocks = @fetches = 0
-            @threads << monitor_thread
+            @bla = monitor_thread
 
             # Generate thread
             @fetch_mutex = Mutex.new
