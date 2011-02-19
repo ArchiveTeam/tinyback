@@ -31,7 +31,7 @@ module TinyBack
             #   - dots (everything after the first dot is ignored)
             #
             def self.canonicalize code
-                code = code.split(".").first.to_s # Remove everything after slash
+                code = code.split(".").first.to_s # Remove everything after dot
                 code.gsub!(/[^A-Za-z0-9_]/, "") # Remove invalid characters
                 code.downcase! # Make everything lowercase
                 raise InvalidCodeError if code.empty?
@@ -45,7 +45,7 @@ module TinyBack
             def fetch code
                 begin
                     socket = TCPSocket.new "tr.im", 80
-                    socket.write "HEAD /#{self.class.canonicalize(code)}\n\n"
+                    socket.write(["HEAD /#{self.class.canonicalize(code)} HTTP/1.1", "Host: tr.im", "Cookie: _trim=0"] * "\n" + "\n\n")
                     headers = socket.gets nil
                     raise FetchError.new "Service unexpectedly closed the connection" if headers.nil?
 
@@ -53,12 +53,15 @@ module TinyBack
 
                     headers = headers.split "\r\n"
                     status = headers.shift
-                    raise FetchError.new "Expected 200/301/302/404, but received #{status.inspect}" unless status == "HTTP/1.1 301 Moved Permanently"
-
-                    match = headers[-5].match /^Location: (.*)$/
-                    raise FetchError.new "No Location found at the expected place in headers" unless match
-                    raise NoRedirectError.new if match[1] == "http://tr.im"
-                    match[1]
+                    case status
+                    when "HTTP/1.1 301 Moved Permanently"
+                        match = headers[4].match /^Location: (.*)$/
+                        raise FetchError.new "No Location found at the expected place in headers" unless match
+                        raise NoRedirectError if match[1] == "http://tr.im"
+                        return match[1]
+                    else
+                        raise FetchError.new "Expected 200/301/302/404, but received #{status.inspect}"
+                    end
                 ensure
                     socket.close if socket and not socket.closed?
                 end
