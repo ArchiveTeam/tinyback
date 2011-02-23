@@ -1,6 +1,7 @@
 require "logger"
 require "tinyback/services"
 require "thread"
+require "zlib"
 
 module TinyBack
 
@@ -45,7 +46,7 @@ module TinyBack
             end
 
             # Write thread
-            @threads << write_thread(filename + ".txt")
+            @threads << write_thread(filename + ".txt.gz")
         end
 
         #
@@ -207,7 +208,7 @@ module TinyBack
                 @logger.info "Starting write thread"
                 Thread.current.priority = -2
                 stop = @fetch_threads
-                handle = File.open filename, "w"
+                handle = Zlib::GzipWriter.open filename, 9
                 while stop > 0 do
                     code, url = @write_queue.pop
                     if code == :stop

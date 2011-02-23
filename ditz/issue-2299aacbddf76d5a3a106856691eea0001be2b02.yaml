@@ -5,7 +5,7 @@ type: :feature
 component: Reaper
 release: v0.1
 reporter: David Triendl <david@triendl.name>
-status: :unstarted
+status: :in_progress
 disposition: 
 creation_time: 2011-02-23 05:30:00.092742 Z
 references: []
@@ -20,3 +20,7 @@ log_events:
   - David Triendl <david@triendl.name>
   - assigned to release v0.1 from unassigned
   - ""
+- - 2011-02-23 09:25:12.916571 Z
+  - David Triendl <david@triendl.name>
+  - changed status from unstarted to in_progress
+  - Let's try gzip first, it's already integrated into ruby's stdlib.
