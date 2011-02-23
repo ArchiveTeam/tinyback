@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Add "generic" service
+desc: The service should be easy to adjust to small shorteners. Simple HTTP Location header parsing and off we go.
+type: :feature
+component: Services
+release: 
+reporter: David Triendl <david@triendl.name>
+status: :unstarted
+disposition: 
+creation_time: 2011-02-23 07:29:45.354674 Z
+references: []
+
+id: e5c1998bbdf7d93cfac94f4eb381f7e01733b189
+log_events: 
+- - 2011-02-23 07:29:46.126407 Z
+  - David Triendl <david@triendl.name>
+  - created
+  - ""

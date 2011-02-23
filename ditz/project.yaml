@@ -20,3 +20,12 @@ releases:
     - David Triendl <david@triendl.name>
     - created
     - This milestone tracks bug that are so serious that all scraping operations have to be put on hold until they are fixed.
+- !ditz.rubyforge.org,2008-03-06/release 
+  name: v0.1
+  status: :unreleased
+  release_time: 
+  log_events: 
+  - - 2011-02-23 05:31:30.168616 Z
+    - David Triendl <david@triendl.name>
+    - created
+    - This is the first polished version that can be released to the public.

@@ -3,7 +3,7 @@ title: Use better test system
 desc: Currently there is a lot of duplicated code in the tests for each Service. Also, the tests are very slow (mostly because of the IPManager DNS requests) and even for changes to one service only, all tests have to run. Using a self-crafted test system (possibly with multi-threading) would be a lot faster and easier to use.
 type: :feature
 component: tinyback
-release: 
+release: v0.1
 reporter: David Triendl <david@triendl.name>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2011-01-28 12:27:22.529053 Z
   - David Triendl <david@triendl.name>
   - created
+  - ""
+- - 2011-02-23 05:32:58.840131 Z
+  - David Triendl <david@triendl.name>
+  - assigned to release v0.1 from unassigned
   - ""

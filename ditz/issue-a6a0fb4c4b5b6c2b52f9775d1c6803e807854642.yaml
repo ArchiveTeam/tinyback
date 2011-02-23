@@ -3,7 +3,7 @@ title: (Re?)structure Reaper
 desc: After many small additions the Reaper class has become a big bloated mess that doesn't even work correct. Find a suitable model to replace the current one or clean up the current code.
 type: :bugfix
 component: Reaper
-release: 
+release: v0.1
 reporter: David Triendl <david@triendl.name>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2010-12-07 18:48:55.680090 Z
   - David Triendl <david@triendl.name>
   - created
+  - ""
+- - 2011-02-23 05:34:40.100127 Z
+  - David Triendl <david@triendl.name>
+  - assigned to release v0.1 from unassigned
   - ""
