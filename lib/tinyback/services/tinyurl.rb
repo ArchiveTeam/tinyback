@@ -43,7 +43,7 @@ module TinyBack
                 code = code.split("/").first.to_s # Remove everything after slash
                 code.tr! "-", "" # Remove dashes
                 code.downcase! # Make everything lowercase
-                raise InvalidCodeError.new unless code.match /^[a-z0-9]{1,49}$/
+                raise InvalidCodeError unless code.match /^[a-z0-9]{1,49}$/
                 code
             end
 
@@ -70,7 +70,7 @@ module TinyBack
                             begin
                                 doc = Hpricot data
                             rescue Hpricot::ParseError => e
-                                raise FetchError.new "Could not parse HTML data (#{e.inspect})"
+                                raise FetchError, "Could not parse HTML data (#{e.inspect})"
                             end
                             if doc.at("/html/head/title").innerText == "Redirecting..."
                                 url = doc.at("/html/body").innerText
@@ -83,7 +83,7 @@ module TinyBack
                                 return url.chomp("\n") unless url.nil?
                             end
                             doc = nil
-                            raise FetchError.new "Could not parse URL for code #{code.inspect}"
+                            raise FetchError, "Could not parse URL for code #{code.inspect}"
                         else
                             socket.close
                             return fetch(code, true)
@@ -96,18 +96,18 @@ module TinyBack
                             when /^X-tiny: (error) [0-9]+\.[0-9]+\r\n/
                             when /X-Powered-By: PHP\/[0-9]\.[0-9]\.[0-9]\r\n/
                             when "\r\n"
-                                raise CodeBlockedError.new
+                                raise CodeBlockedError
                             end
                         end
-                        raise FetchError.new "Expected Location, but received #{line.inspect} for code #{code.inspect}"
+                        raise FetchError, "Expected Location, but received #{line.inspect} for code #{code.inspect}"
                     when "HTTP/1.0 302 Found\r\n"
-                        raise CodeBlockedError.new
+                        raise CodeBlockedError
                     when "HTTP/1.0 403 Forbidden\r\n"
-                        raise ServiceBlockedError.new
+                        raise ServiceBlockedError
                     when "HTTP/1.0 404 Not Found\r\n"
-                        raise NoRedirectError.new
+                        raise NoRedirectError
                     else
-                        raise FetchError.new "Expected 200/301/302/404, but received #{line.inspect} for code #{code.inspect}"
+                        raise FetchError, "Expected 200/301/302/404, but received #{line.inspect} for code #{code.inspect}"
                     end
                 ensure
                     socket.close if socket and not socket.closed?

@@ -38,8 +38,8 @@ module TinyBack
             #   - underscore
             #
             def self.canonicalize code
-                raise InvalidCodeError.new unless code.match /^([A-Za-z0-9\-_]+)$/
-                raise InvalidCodeError.new if ["api", "pro"].include? code
+                raise InvalidCodeError unless code.match /^([A-Za-z0-9\-_]+)$/
+                raise InvalidCodeError if ["api", "pro"].include? code
                 code
             end
 
@@ -62,32 +62,32 @@ module TinyBack
                         @socket.write data
                     end
                     headers = @socket.gets("\r\n\r\n")
-                    raise FetchError.new "Service unexpectedly closed the connection" if headers.nil?
+                    raise FetchError, "Service unexpectedly closed the connection" if headers.nil?
                     headers = headers.split("\r\n")
                     status = headers.shift
                     begin
                         case status
                         when "HTTP/1.1 301 Moved"
                             match = headers[-3].match /^Location: (.*)$/
-                            raise FetchError.new "No Location found at the expected place in headers" unless match
+                            raise FetchError, "No Location found at the expected place in headers" unless match
                             return match[1]
                         when "HTTP/1.1 302 Found"
                             match = headers[-3].match /^Location: (.*)$/
-                            raise FetchError.new "No Location found at the expected place in headers" unless match
+                            raise FetchError, "No Location found at the expected place in headers" unless match
                             target = URI.parse match[1]
-                            raise FetchError.new "302 Found but unknown redirect URL" unless target.scheme == "http" and target.host == "bit.ly" and target.path == "/a/warning"
+                            raise FetchError, "302 Found but unknown redirect URL" unless target.scheme == "http" and target.host == "bit.ly" and target.path == "/a/warning"
                             target = CGI.parse target.query
-                            raise FetchError.new "Code mismatch on 302 Found" unless target["hash"].first == code
-                            raise FetchError.new "No URL given" unless target.key? "url"
+                            raise FetchError, "Code mismatch on 302 Found" unless target["hash"].first == code
+                            raise FetchError, "No URL given" unless target.key? "url"
                             return target["url"].first.strip
                         when "HTTP/1.1 403 Forbidden"
-                            raise ServiceBlockedError.new
+                            raise ServiceBlockedError
                         when "HTTP/1.1 404 Not Found"
-                            raise NoRedirectError.new
+                            raise NoRedirectError
                         when nil
-                            raise FetchError.new "Socket unexpectedly closed"
+                            raise FetchError, "Socket unexpectedly closed"
                         else
-                            raise FetchError.new "Expected 301/302/404, but received #{status.inspect}"
+                            raise FetchError, "Expected 301/302/404, but received #{status.inspect}"
                         end
                     ensure
                         if headers.include? "Connection: close"

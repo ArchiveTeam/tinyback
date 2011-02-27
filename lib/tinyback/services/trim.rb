@@ -47,7 +47,7 @@ module TinyBack
                     socket = TCPSocket.new "tr.im", 80
                     socket.write(["HEAD /#{self.class.canonicalize(code)} HTTP/1.1", "Host: tr.im", "Cookie: _trim=0"] * "\n" + "\n\n")
                     headers = socket.gets nil
-                    raise FetchError.new "Service unexpectedly closed the connection" if headers.nil?
+                    raise FetchError, "Service unexpectedly closed the connection" if headers.nil?
 
                     raise ServiceBlockedError if headers == "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n<html>\n<head>\n  <title>TR.IM NOT AVAILABLE</title>\n</head>\n<body>\n  TR.IM SERVERS NOT AVAILABLE\n</body>\n</html>\n\n"
 
@@ -56,11 +56,11 @@ module TinyBack
                     case status
                     when "HTTP/1.1 301 Moved Permanently"
                         match = headers[4].match /^Location: (.*)$/
-                        raise FetchError.new "No Location found at the expected place in headers" unless match
+                        raise FetchError, "No Location found at the expected place in headers" unless match
                         raise NoRedirectError if match[1] == "http://tr.im"
                         return match[1]
                     else
-                        raise FetchError.new "Expected 200/301/302/404, but received #{status.inspect}"
+                        raise FetchError, "Expected 200/301/302/404, but received #{status.inspect}"
                     end
                 ensure
                     socket.close if socket and not socket.closed?

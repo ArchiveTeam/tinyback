@@ -8,7 +8,7 @@ module TinyBack
         def initialize *hosts
             @mutex = Mutex.new
             @hosts = hosts
-            raise ArgumentError.new "Need at least 1 host" if @hosts.size < 1
+            raise ArgumentError, "Need at least 1 host" if @hosts.size < 1
         end
 
         def get_ip
