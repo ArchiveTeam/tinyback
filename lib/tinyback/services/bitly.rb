@@ -1,5 +1,4 @@
 require "cgi"
-require "hpricot"
 require "socket"
 require "uri"
 
