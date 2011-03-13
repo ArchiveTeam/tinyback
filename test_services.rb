@@ -26,6 +26,10 @@ ObjectSpace.each_object(Class) do |obj|
     end
 end
 
+threads.sort! do |a, b|
+    a[:name] <=> b[:name]
+end
+
 threads.each do |thread|
     thread.join
     puts "#{thread[:name]}: #{thread[:status]}"
