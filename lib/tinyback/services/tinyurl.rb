@@ -61,7 +61,7 @@ module TinyBack
                     else
                         "HEAD"
                     end
-                    socket.write ["#{method} /#{self.class.canonicalize(code)} HTTP/1.0", "Host: tinyurl.com"].join("\r\n") + "\r\n\r\n"
+                    socket.write ["#{method} /#{code} HTTP/1.0", "Host: tinyurl.com"].join("\r\n") + "\r\n\r\n"
                     case (line = socket.gets)
                     when "HTTP/1.0 200 OK\r\n"
                         if get

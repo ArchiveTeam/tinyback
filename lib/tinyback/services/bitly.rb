@@ -49,7 +49,6 @@ module TinyBack
             # This method is not thread-safe.
             #
             def fetch code
-                code = self.class.canonicalize code
                 begin
                     if @socket.nil? or @socket.closed?
                         @socket = TCPSocket.new @ip, 80

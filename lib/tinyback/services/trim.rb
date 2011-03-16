@@ -45,7 +45,7 @@ module TinyBack
             def fetch code
                 begin
                     socket = TCPSocket.new "tr.im", 80
-                    socket.write(["HEAD /#{self.class.canonicalize(code)} HTTP/1.1", "Host: tr.im", "Cookie: _trim=0"] * "\n" + "\n\n")
+                    socket.write(["HEAD /#{code} HTTP/1.1", "Host: tr.im", "Cookie: _trim=0"] * "\n" + "\n\n")
                     headers = socket.gets nil
                     raise FetchError, "Service unexpectedly closed the connection" if headers.nil?
 
