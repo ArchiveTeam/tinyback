@@ -8,6 +8,14 @@ def escape data
     end
 end
 
+if ARGV[0].empty?
+    prefix = ""
+    STDERR.puts "No prefix specified - using empty string"
+else
+    prefix = ARGV[0]
+    STDERR.puts "Prefix: #{prefix}"
+end
+
 STDIN.each_line("\n") do |line|
     line.chomp!("\n")
     if line.empty?
@@ -16,5 +24,5 @@ STDIN.each_line("\n") do |line|
     end
     code, url = line.split("|", 2)
 
-    STDOUT.write(escape(url) + "," + escape(code) + ",,\r\n")
+    STDOUT.write(escape(url) + "," + escape(prefix + code) + ",,\r\n")
 end
