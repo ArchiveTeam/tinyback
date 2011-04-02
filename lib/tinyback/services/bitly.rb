@@ -23,12 +23,6 @@ module TinyBack
 
         class Bitly < Base
 
-            @@ip_manager = IPManager.new "bit.ly", "www.bit.ly", "j.mp", "www.j.mp"
-
-            def initialize
-                @ip = @@ip_manager.get_ip
-            end
-
             #
             # Returns the character set used by this shortener. This function
             # is probably only useful for the advance method in the base class.
@@ -66,13 +60,13 @@ module TinyBack
             def fetch code
                 begin
                     if @socket.nil? or @socket.closed?
-                        @socket = TCPSocket.new @ip, 80
+                        @socket = TCPSocket.new "j.mp", 80
                     end
                     data =  ["HEAD /#{code} HTTP/1.1", "Host: j.mp", "Cookie: _bit=0"].join("\n") + "\n\n"
                     begin
                         @socket.write data
                     rescue Errno::EPIPE
-                        @socket = TCPSocket.new @ip, 80
+                        @socket = TCPSocket.new "j.mp", 80
                         @socket.write data
                     end
                     headers = @socket.gets("\r\n\r\n")
