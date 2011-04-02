@@ -7,15 +7,103 @@ module TinyBack
 
     class Reaper
 
+        #
+        # The Stats class is used to provide some statistics about the fetch
+        # process.
+        #
+        class Stats
+
+            # Number of fetch requests
+            attr_accessor :fetched
+
+            # Number of not found results
+            attr_accessor :not_found
+
+            # Number of miscellaneous errors
+            attr_accessor :error
+
+            # Number of ServiceBlocked errors
+            attr_accessor :blocked
+
+            #
+            # Creates a new Stats class. Number of fetch requests, not found
+            # results, miscellaneous errors and ServiceBlocked errors can be
+            # given as arguments in that order.
+            #
+            def initialize *args
+                @fetched = args[0] || 0
+                @not_found = args[1] || 0
+                @error = args[2] || 0
+                @blocked = args[3] || 0
+            end
+
+            #
+            # Number of fetch requests that returned a long URL.
+            #
+            def successful
+                @fetched - @not_found - @error - @blocked
+            end
+
+            #
+            # Fill rate: Approximate number of successful fetch requests to
+            # total requests.
+            #
+            def fill_rate
+                return 0.0 if @fetched == 0
+                1.0 - (@not_found.to_f / @fetched)
+            end
+
+            #
+            # Error rate: Approximate number of failed requests to number of
+            # total requests.
+            #
+            def error_rate
+                return 0.0 if @fetched == 0
+                @error.to_f / @fetched
+            end
+
+            #
+            # Block rate: Approximate number of blocked requests to number of
+            # total requests.
+            #
+            def block_rate
+                return 0.0 if @fetched == 0
+                @blocked.to_f / @fetched
+            end
+
+            #
+            # Returns a short string showing the most interesting stats.
+            #
+            def to_s
+                "Requests: #{@fetched}, fill rate: #{(fill_rate * 100).round}%, error rate: #{(error_rate * 100).round}%, block rate: #{(block_rate * 100).round}%"
+            end
+
+            #
+            # Returns a string showing all recorded values.
+            #
+            def inspect
+                "Requests: #{@fetched}, not found: #{@not_found}, errors: #{@error}, blocked: #{@blocked}"
+            end
+
+            #
+            # Returns a new Stats instance containing the delta between two
+            # points in time.
+            #
+            def -(other)
+                Stats.new(@fetched - other.fetched, @not_found - other.not_found, @error - other.error, @blocked - other.blocked)
+            end
+
+        end
+
         class FetchTimeout < RuntimeError
         end
 
         MAX_TRIES = 3
-        FETCH_QUEUE_MIN_SIZE_PER_THREAD = 250
-        FETCH_QUEUE_MAX_SIZE_PER_THREAD = 1000
 
         def initialize service, start, stop, fetch_threads = 10, debug = false
             filename = service.to_s.split("::").last + "_" + start + "-" + stop
+
+            # Log
             @logger = Logger.new(filename + ".log")
             @logger.level = if debug
                 Logger::DEBUG
@@ -25,28 +113,21 @@ module TinyBack
             @logger.info "Initializing Reaper"
 
             @service = service
-            @fetch_threads = fetch_threads
+            @num_fetch_threads = fetch_threads
             @threads = []
+            @mutex = Mutex.new
 
-            # Monitor thread
-            @stats_mutex = Mutex.new
-            @blocks = @fetches = 0
-            @bla = monitor_thread
-
-            # Generate thread
-            @fetch_mutex = Mutex.new
-            @fetch_queue = []
-            @threads << generate_thread(start, stop)
-
-            # Fetch threads
-            @failed = {}
+            @stats = Stats.new
+            @current_code = start
+            @stop_code = stop
             @write_queue = Queue.new
-            @fetch_threads.times do
+
+            @monitor = monitor_thread
+            @threads << write_thread(filename + ".txt.gz")
+            @num_fetch_threads.times do
                 @threads << fetch_thread
             end
 
-            # Write thread
-            @threads << write_thread(filename + ".txt.gz")
         end
 
         #
@@ -64,139 +145,105 @@ module TinyBack
 
         #
         # Creates a new monitor thread. The monitor thread is responsible for
-        # keeping track of statistics.
+        # keeping track of statistics. It is possible to create multiple
+        # monitor threads with different stats gathering intervals.
         #
-        def monitor_thread
+        def monitor_thread interval = 20
             Thread.new do
+                old_stats = @mutex.synchronize do
+                    @stats.dup
+                end
                 loop do
-                    sleep 120
-                    block_rate = @stats_mutex.synchronize do
-                        fetches = @fetch_mutex.synchronize do
-                            fetches = @fetches
-                            @fetches = 0
-                            fetches
-                        end
-                        if fetches > 0
-                            blocks = @blocks
-                            @blocks = 0
-                            blocks.to_f/fetches
-                        else
-                            0
-                        end
+                    sleep interval
+                    stats = @mutex.synchronize do
+                        @stats.dup
                     end
-                    if block_rate >= 0.1
-                        @logger.fatal "Block rate is too high (#{block_rate*100}%)"
+                    diff = stats - old_stats
+                    old_stats = stats
+
+                    @logger.info "#{interval}s average stats: #{diff}"
+                    @logger.info "Request rate: #{diff.fetched.to_f / interval} req/s"
+
+                    if diff.block_rate >= 0.1
+                        @logger.fatal "#{interval}s average block rate is too high (#{diff.block_rate*100}%)"
                         exit 1
                     end
                 end
             end
         end
 
-        #
-        # Creates a new generate thread. The generate thread fills the fetch
-        # queue up to the limit of FETCH_QUEUE_MAX_SIZE items and sleeps for
-        # the estimated time it takes for the queue to reach
-        # FETCH_QUEUE_MIN_SIZE items. The first code inserted into the queue is
-        # given by the parameter start, the last code by the parameter stop.
-        #
-        def generate_thread start, stop
-            Thread.new(start, stop) do |start, stop|
-                @logger.info "Starting generate thread (#{start.inspect} to #{stop.inspect})"
-                Thread.current.priority = -1
-                current = start
-                sleep_interval = 30
-                first_sleep = true
-                loop do
-                    size = @fetch_mutex.synchronize do
-                        @fetch_queue.size
-                    end
-                    if size < (FETCH_QUEUE_MIN_SIZE_PER_THREAD * @fetch_threads)
-                        target = (FETCH_QUEUE_MAX_SIZE_PER_THREAD * @fetch_threads) - size
-                        new = []
-                        while new.size < target
-                            new << current.dup
-                            break if current == stop
-                            current = @service.advance(current)
-                        end
-                        @logger.info "Filling fetch queue with #{new.size} items (#{new.first.inspect}-#{new.last.inspect})"
-                        @fetch_mutex.synchronize do
-                            @fetch_queue = new.shuffle + @fetch_queue
-                        end
-                        new = nil
-                        break if current == stop
-                        sleep_interval -= 1
-                        sleep sleep_interval
-                        first_sleep = true
-                    else
-                        sleep_interval += 1 if first_sleep
-                        first_sleep = false
-                        sleep 1
-                    end
-                end
-                terminate = Array.new(@fetch_threads) do
-                    :stop
-                end
-                @fetch_mutex.synchronize do
-                    @fetch_queue = terminate + @fetch_queue
-                end
-                @logger.info "Generate thread terminated"
-            end
-        end
-
         def fetch_thread
             Thread.new do
                 @logger.info "Starting fetch thread"
-                Thread.current.priority = -3
-                Thread.pass
                 service = @service.new
                 loop do
-                    code = @fetch_mutex.synchronize do
-                        code = @fetch_queue.pop
-                        @fetches += 1 unless code.nil?
-                        code
+                    code = @mutex.synchronize do
+                        tmp = @current_code
+                        @current_code = @service.advance @current_code
+                        @stats.fetched += 1
+                        tmp
                     end
-                    break if code == :stop
-                    if code.nil?
-                        @logger.warn "Empty fetch queue caused fetch stall"
-                        sleep (@fetch_threads / 10)
-                        next
-                    end
-                    child = Thread.new(Thread.current, code) do |mother, code|
-                        begin
-                            Thread.current[:url] = service.fetch code
-                        rescue => e
-                            Thread.current[:error] = e
+                    break if code == @stop_code
+
+                    tries = 0
+
+                    begin
+                        tries += 1
+                        retrying = tries < MAX_TRIES
+
+                        child = Thread.new(Thread.current, code) do |mother, code|
+                            begin
+                                Thread.current[:url] = service.fetch code
+                            rescue => e
+                                Thread.current[:error] = e
+                            end
+                            Thread.current[:terminated] = true
+                            mother.run
                         end
-                        Thread.current[:terminated] = true
-                        mother.run
-                    end
-                    sleep 10
-                    child.kill!
-                    child[:error] = FetchTimeout.new unless child[:terminated]
-                    case child[:error]
-                    when nil
-                        @logger.debug "Code #{code.inspect} found (#{child[:url].inspect})"
-                        @write_queue.push [code, child[:url]]
-                    when Services::NoRedirectError
-                        @logger.debug "Code #{code.inspect} is unknown to service"
-                    when Services::CodeBlockedError
-                        @logger.debug "Code #{code.inspect} is blocked by service"
-                    when Services::ServiceBlockedError
-                        @logger.info "Service is blocking TinyBack"
-                        @stats_mutex.synchronize do
-                            @blocks += 1
+                        sleep 10
+                        child.kill!
+                        child[:error] = FetchTimeout.new unless child[:terminated]
+
+                        case child[:error]
+                        when nil
+                            @logger.debug "Code #{code.inspect} found (#{child[:url].inspect})"
+                            @write_queue.push [code, child[:url]]
+                            retrying = false
+                        when Services::NoRedirectError
+                            @mutex.synchronize do
+                                @stats.not_found += 1
+                            end
+                            retrying = false
+                        when Services::CodeBlockedError
+                            @mutex.synchronize do
+                                @stats.error += 1
+                            end
+                            @logger.debug "Code #{code.inspect} is blocked by service"
+                        when Services::ServiceBlockedError
+                            @logger.info "Service is blocking TinyBack"
+                            @mutex.synchronize do
+                                @stats.blocked += 1
+                                @stats.fetched += 1 if retrying
+                            end
+                        when Services::FetchError, Errno::ECONNRESET, Errno::ECONNREFUSED, Errno::ETIMEDOUT, FetchTimeout
+                            @mutex.synchronize do
+                                @stats.error += 1
+                                @stats.fetched += 1 if retrying
+                            end
+                            @logger.error "Fetching code #{code.inspect} triggered #{child[:error].inspect}, recycling service"
+                            @logger.warn "Code #{code.inspect} failed #{tries} times, not(!) retrying" if not retrying
+                            service = @service.new
+                            # Clean up the mess of the old service
+                            GC.start
+                        else
+                            @logger.fatal "Code #{code.inspect} triggered #{child[:error].inspect}"
+                            exit
                         end
-                        requeue code
-                    when Services::FetchError, Errno::ECONNRESET, Errno::ECONNREFUSED, Errno::ETIMEDOUT, FetchTimeout
-                        @logger.error "Fetching code #{code.inspect} triggered #{child[:error].inspect}, recycling service, retrying"
-                        service = @service.new
-                        # Clean up the mess of the old service
-                        GC.start
-                        requeue code
-                    else
-                        @logger.fatal "Code #{code.inspect} triggered #{child[:error].inspect}"
-                        exit
-                    end
+                    end while retrying
+                end
+
+                @mutex.synchronize do
+                    @stats.fetched -= 1
                 end
                 @write_queue.push :stop
                 @logger.info "Fetch thread terminated"
@@ -207,7 +254,7 @@ module TinyBack
             Thread.new(filename) do |filename|
                 @logger.info "Starting write thread"
                 Thread.current.priority = -2
-                stop = @fetch_threads
+                stop = @num_fetch_threads
                 handle = Zlib::GzipWriter.open filename, 9
                 while stop > 0 do
                     code, url = @write_queue.pop
@@ -223,35 +270,6 @@ module TinyBack
                 end
                 handle.close
                 @logger.info "Write thread terminated"
-            end
-        end
-
-        def requeue code
-            give_up = @fetch_mutex.synchronize do
-                if @failed.key? code
-                    @failed[code] += 1
-                    if @failed[code] >= MAX_TRIES
-                        @failed.delete code
-                        true
-                    else
-                        false
-                    end
-                else
-                    @failed[code] = 1
-                    false
-                end
-            end
-            if give_up
-                @logger.warn "Code #{code.inspect} failed #{MAX_TRIES} times, not(!) retrying"
-            else
-                @logger.info "Retrying code #{code.inspect}"
-                @fetch_mutex.synchronize do
-                    if @fetch_queue[0] == :stop
-                        @fetch_queue.insert(@fetch_queue.rindex(:stop), code)
-                    else
-                        @fetch_queue.unshift code
-                    end
-                end
             end
         end
 

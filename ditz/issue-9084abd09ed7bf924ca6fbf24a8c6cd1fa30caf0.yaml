@@ -5,8 +5,8 @@ type: :bugfix
 component: Reaper
 release: v0.1
 reporter: David Triendl <david@triendl.name>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :reorg
 creation_time: 2010-11-27 11:54:53.509505 Z
 references: []
 
@@ -20,3 +20,7 @@ log_events:
   - David Triendl <david@triendl.name>
   - assigned to release v0.1 from unassigned
   - ""
+- - 2011-03-17 19:04:12.073062 Z
+  - David Triendl <david@triendl.name>
+  - closed with disposition reorg
+  - No more generate thread, no more stalls.
