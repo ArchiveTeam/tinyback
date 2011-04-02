@@ -41,6 +41,7 @@ module TinyBack
         class Base
 
             def self.advance code
+                code = code.dup
                 current = code.size - 1
                 while current >= 0
                     if code[current] == charset()[-1]
