@@ -5,8 +5,8 @@ type: :bugfix
 component: Reaper
 release: v0.1
 reporter: David Triendl <david@triendl.name>
-status: :unstarted
-disposition: 
+status: :closed
+disposition: :fixed
 creation_time: 2010-12-07 18:48:54.768587 Z
 references: []
 
@@ -20,3 +20,11 @@ log_events:
   - David Triendl <david@triendl.name>
   - assigned to release v0.1 from unassigned
   - ""
+- - 2011-03-17 19:03:43.869140 Z
+  - David Triendl <david@triendl.name>
+  - changed status from unstarted to in_progress
+  - Let's get rid of the generate thread. I don't think any service at all has been fooled by randomizing the queue.
+- - 2011-04-02 12:32:27.310554 Z
+  - David Triendl <david@triendl.name>
+  - closed with disposition fixed
+  - Removed the whole fetch queue and generator thread stuff, in favor of each thread generating his own code. Also introduced a stats class instead of that ugly hack that was known as monitor thread.
