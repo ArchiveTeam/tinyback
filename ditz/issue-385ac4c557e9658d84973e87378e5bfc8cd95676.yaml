@@ -3,7 +3,7 @@ title: Circumvent tinyurl.com blocking
 desc: TinyURL blocks the crawler when it requests too many non-existant URLs. Find a way to circumvent this.
 type: :task
 component: Services
-release: 
+release: v0.2
 reporter: David Triendl <david@triendl.name>
 status: :unstarted
 disposition: 
@@ -16,3 +16,7 @@ log_events:
   - David Triendl <david@triendl.name>
   - created
   - http://i55.tinypic.com/j5bia9.jpg
+- - 2011-04-02 12:43:12.539044 Z
+  - David Triendl <david@triendl.name>
+  - assigned to release v0.2 from unassigned
+  - ""

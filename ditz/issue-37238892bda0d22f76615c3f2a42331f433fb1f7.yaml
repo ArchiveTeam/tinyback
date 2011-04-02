@@ -3,7 +3,7 @@ title: Use better "write" mechanism
 desc: Currently we use a simple write thread that writes data from a ruby queue. It would be awesome to abstract this into it's own class. This would allow to better configure compression, etc.
 type: :feature
 component: Reaper
-release: 
+release: v0.1
 reporter: David Triendl <david@triendl.name>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2011-04-02 12:34:04.754706 Z
   - David Triendl <david@triendl.name>
   - created
+  - ""
+- - 2011-04-02 12:40:11.098928 Z
+  - David Triendl <david@triendl.name>
+  - assigned to release v0.1 from unassigned
   - ""

@@ -3,7 +3,7 @@ title: Add "generic" service
 desc: The service should be easy to adjust to small shorteners. Simple HTTP Location header parsing and off we go.
 type: :feature
 component: Services
-release: 
+release: v0.1
 reporter: David Triendl <david@triendl.name>
 status: :unstarted
 disposition: 
@@ -15,4 +15,8 @@ log_events:
 - - 2011-02-23 07:29:46.126407 Z
   - David Triendl <david@triendl.name>
   - created
+  - ""
+- - 2011-04-02 12:40:28.179674 Z
+  - David Triendl <david@triendl.name>
+  - assigned to release v0.1 from unassigned
   - ""

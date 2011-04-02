@@ -3,7 +3,7 @@ title: Track status (for easier resuming of tasks)
 desc: The reaper should track up to which code the write thread has already written the url data on the disk.
 type: :feature
 component: Reaper
-release: v0.1
+release: v0.2
 reporter: David Triendl <david@triendl.name>
 status: :unstarted
 disposition: 
@@ -19,4 +19,8 @@ log_events:
 - - 2011-02-23 05:33:44.164688 Z
   - David Triendl <david@triendl.name>
   - assigned to release v0.1 from unassigned
+  - ""
+- - 2011-04-02 12:39:48.673795 Z
+  - David Triendl <david@triendl.name>
+  - assigned to release v0.2 from v0.1
   - ""
