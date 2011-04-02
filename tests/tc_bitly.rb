@@ -51,6 +51,9 @@ class TC_Bitly < Test::Unit::TestCase
             Bitly.canonicalize "api"
         end
         assert_raise InvalidCodeError do # Keyword
+            Bitly.canonicalize "bundles"
+        end
+        assert_raise InvalidCodeError do # Keyword
             Bitly.canonicalize "pro"
         end
     end
