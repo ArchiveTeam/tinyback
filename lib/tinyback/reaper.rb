@@ -193,12 +193,13 @@ module TinyBack
                 service = @service.new
                 loop do
                     code = @mutex.synchronize do
+                        break if @current_code == @stop_code
                         tmp = @current_code
                         @current_code = @service.advance @current_code
                         @stats.fetched += 1
                         tmp
                     end
-                    break if code == @stop_code
+                    break if code.nil?
 
                     tries = 0
 
@@ -257,9 +258,6 @@ module TinyBack
                     end while retrying
                 end
 
-                @mutex.synchronize do
-                    @stats.fetched -= 1
-                end
                 @write_queue.push :stop
                 @logger.info "Fetch thread terminated"
             end
