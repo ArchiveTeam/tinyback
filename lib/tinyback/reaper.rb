@@ -277,8 +277,8 @@ module TinyBack
                         next
                     end
                     if url.include? "\n"
-                        @logger.fatal "Newline in url for code #{code.inspect}"
-                        exit
+                        @logger.error "Newline in url for code #{code.inspect}"
+                        next
                     end
                     handle.write code + "|" + url + "\n"
                 end
