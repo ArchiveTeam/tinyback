@@ -235,6 +235,7 @@ module TinyBack
                                 @stats.error += 1
                             end
                             @logger.debug "Code #{code.inspect} is blocked by service"
+                            retrying = false
                         when Services::ServiceBlockedError
                             @logger.info "Service is blocking TinyBack"
                             @mutex.synchronize do
