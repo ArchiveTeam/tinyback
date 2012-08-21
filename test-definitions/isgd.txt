@@ -1,0 +1,14 @@
+## Standard tests
+# example.org test
+gmYZc|http://www.example.org/
+# Not found
+oycsuls|notfound
+
+## Link Disabled
+mBAh|http://pocketexpress.com/assets/img/channels/icn-extras.jpg
+
+## 502 Error
+meIw|blocked
+
+## is.gd is too stupid to do input checking
+ms7x|blocked

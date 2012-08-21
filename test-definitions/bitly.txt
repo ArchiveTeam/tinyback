@@ -1,0 +1,21 @@
+## Standard tests
+# example.org test
+bj6ufn|http://www.example.org/
+# Not found
+oycsuls|notfound
+
+## Stop - there might be a problem with the requested link
+# Normal
+4x4Ot5|http://www.alideas.com/
+# Whitespace before URL
+O4q| http://tr.im/2j38
+# Whitespace after URL
+m1SXT|http://www.infocart.jp/t/37940/shinshin96/  
+
+## Special words
+# Old API endpoint
+api|blocked
+# Bundles: Looks like a bit.ly redirect, but isn't
+bundles|blocked
+# Pro (now Bitly Enterprise)
+pro|http://justsignal.com/mobile/post-simple.php?uuid=22e2c82d-8ea9-4c58-9d9f-6bc7fde701ba&entid=44

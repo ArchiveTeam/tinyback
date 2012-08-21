@@ -1,0 +1,23 @@
+## Standard tests
+# example.org test
+4o8vk|http://www.example.org/
+# Not found
+oycsuls|notfound
+
+## Long URL returns 404
+# Normal
+cs|http://www.unicyclist.com/newgateway/get.php
+# With newline in HTML
+0agy1|http://www.philly.com/mld/inquirer/news/local/states/pennsylvania/counties/philadelphia_county/philadelphia/14051913.htm?source=rss&channel=inquirer_philadelphia
+
+## Long URL is a tinyurl
+# With newline in HTML
+0i61s|http://tinyurl.com/npxpr
+# Was previously an error page, but now is a normal redirect
+w|http://tinyurl.com/create.php?url=http://translate.google.com/translate?hl=en&u=http%3A%2F%2Fwww.buy-tees.com&langpair=en%7Cfr
+
+## Blocked
+# URL Terminated page
+dick|blocked
+# No redirect URL given
+bvkke|blocked
