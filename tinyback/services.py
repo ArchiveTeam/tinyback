@@ -16,6 +16,7 @@
 
 import abc
 import httplib
+import urlparse
 
 from tinyback import exceptions
 
@@ -54,6 +55,60 @@ class Service:
         Fetches the long URL for the given shortcode from the URL shortener and
         returns the URL or throws various exceptions when something went wrong.
         """
+
+class Bitly(Service):
+    """
+    http://bit.ly/ URL shortener
+    """
+
+    @property
+    def charset(self):
+        return "012356789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_"
+
+    def __init__(self):
+        self._conn = httplib.HTTPConnection("bit.ly")
+
+    def fetch(self, code):
+        self._conn.request("HEAD", "/" + code)
+        resp = self._conn.getresponse()
+        resp.read()
+
+        if resp.status == 301:
+            location = resp.getheader("Location")
+            if not location:
+                raise exceptions.ServiceException("No Location header after HTTP status 301")
+            if resp.reason == "Moved": # Normal bit.ly redirect
+                return location
+            elif resp.reason == "Moved Permanently":
+                # Weird "bundles" redirect, forces connection close despite
+                # sending Keep-Alive header
+                self._conn.close()
+                self._conn.connect()
+                raise exceptions.CodeBlockedException()
+            else:
+                raise exceptions.ServiceException("Unknown HTTP reason %s after HTTP status 301" % resp.reason)
+        elif resp.status == 302:
+            location = resp.getheader("Location")
+            if not location:
+                raise exceptions.ServiceException("No Location header after HTTP status 302")
+            return self._parse_warning_url(code, location)
+        elif resp.status == 404:
+            raise exceptions.NoRedirectException()
+        elif resp.status == 410:
+            raise exceptions.CodeBlockedException()
+        else:
+            raise exceptions.ServiceException("Unknown HTTP status %i" % resp.status)
+
+    def _parse_warning_url(self, code, url):
+        url = urlparse.urlparse(url)
+        if url.scheme != "http" or url.netloc != "bitly.com" or url.path != "/a/warning":
+            raise exceptions.ServiceException("Unexpected Location header after HTTP status 302")
+        query = urlparse.parse_qs(url.query)
+        if not ("url" in query and len(query["url"]) == 1) or not ("hash" in query and len(query["hash"]) == 1):
+            raise exceptions.ServiceException("Unexpected Location header after HTTP status 302")
+        if query["hash"][0] != code:
+            raise exceptions.ServiceException("Hash mismatch forr HTTP status 302")
+        return query["url"][0]
 
 class Isgd(Service):
     """
