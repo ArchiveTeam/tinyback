@@ -59,7 +59,7 @@ class ServiceTester:
             if not success:
                 self._log.warn("Code %s, Expected: %s, Result: %s" % (code, expected, result))
             else:
-                self._log.debug("Code %s, Result: %s" % (code, result))
+                self._log.debug("Code %s, Expected: %s, Result: %s" % (code, expected, result))
 
         f.close()
         self._log.info("Finished testing")

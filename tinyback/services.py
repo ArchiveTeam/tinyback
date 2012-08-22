@@ -16,6 +16,7 @@
 
 import abc
 import httplib
+import re
 import urlparse
 
 from tinyback import exceptions
@@ -173,9 +174,85 @@ class Isgd(Service):
 
         return data[:position]
 
+class Tinyurl(Service):
+
+    @property
+    def charset(self):
+        return "0123456789abcdefghijklmnopqrstuvwxyz"
+
+
+    def __init__(self):
+        self._conn = httplib.HTTPConnection("tinyurl.com")
+
+    def fetch(self, code):
+        self._conn.request("HEAD", "/" + code)
+        resp = self._conn.getresponse()
+        resp.read()
+
+        if resp.status == 200:
+            return self._fetch_200(code)
+        elif resp.status == 301:
+            location = resp.getheader("Location")
+            if not location:
+                raise exceptions.CodeBlockedException("No Location header after HTTP status 301")
+            return location
+        elif resp.status == 302:
+            raise exceptions.CodeBlockedException()
+        elif resp.status == 404:
+            raise exceptions.NoRedirectException()
+        elif resp.status == 500:
+            # Some "errorhelp" URLs result in HTTP status 500, which goes away when trying a different server
+            self._conn.close()
+            self._conn.connect()
+            raise exceptions.ServiceException("HTTP status 500")
+        else:
+            raise exceptions.ServiceException("Unknown HTTP status %i" % resp.status)
+
+        return resp.status
+
+    def _fetch_200(self, code):
+        self._conn.request("GET", "/" + code)
+        resp = self._conn.getresponse()
+        data = resp.read()
+
+        if resp.status != 200:
+            raise exceptions.ServiceException("HTTP status changed from 200 to %i on second request" % resp.status)
+
+        if "<title>Redirecting...</title>" in data:
+            return self._parse_errorhelp(code, data)
+        elif "Error: TinyURL redirects to a TinyURL." in data:
+            return self._parse_tinyurl_redirect(data)
+        else:
+            raise exceptions.ServiceException("Unexpected response on status 200")
+
+    def _parse_errorhelp(self, code, data):
+        match = re.search('<meta http-equiv="refresh" content="0;url=(.*?)">', data)
+        if not match:
+            raise exceptions.ServiceException("No redirect on \"errorhelp\" page on HTTP status 200")
+        url = urlparse.urlparse(match.group(1))
+        if url.scheme != "http" or url.netloc != "tinyurl.com" or url.path != "/errorb.php":
+            raise exceptions.ServiceException("Unexpected redirect on \"errorhelp\" page  on HTTP status 200")
+        query = urlparse.parse_qs(url.query)
+        if not ("url" in query and len(query["url"]) == 1) or not ("path" in query and len(query["path"]) == 1):
+            raise exceptions.ServiceException("Unexpected redirect on \"errorhelp\" page  on HTTP status 200")
+        if query["path"][0] != ("/" + code):
+            raise exceptions.ServiceException("Code mismatch on \"errorhelp\" on HTTP status 200")
+
+        return query["url"][0]
+
+    def _parse_tinyurl_redirect(self, data):
+        match = re.search("<p class=\"intro\">The URL you followed redirects back to a TinyURL and therefore we can't directly send you to the site\\. The URL it redirects to is <a href=\"(.*?)\">", data, re.DOTALL)
+        if not match:
+            raise exceptions.ServiceException("No redirect on \"tinyurl redirect\" page on HTTP status 200")
+
+        return match.group(1)
+
 def factory(name):
     if name == "bitly":
         return Bitly()
     elif name == "isgd":
         return Isgd()
+    elif name == "tinyurl":
+        return Tinyurl()
     raise ValueError("Unknown service %s" % name)
+
