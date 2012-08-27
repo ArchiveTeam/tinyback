@@ -172,3 +172,10 @@ class Isgd(Service):
             raise exceptions.ServiceException("Unexpected response on status 200")
 
         return data[:position]
+
+def factory(name):
+    if name == "bitly":
+        return Bitly()
+    elif name == "isgd":
+        return Isgd()
+    raise ValueError("Unknown service %s" % name)

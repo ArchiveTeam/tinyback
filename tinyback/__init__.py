@@ -20,14 +20,9 @@ from tinyback import exceptions, services
 
 class ServiceTester:
 
-    def __init__(self, service_name, fixtures):
-        self._name = service_name.capitalize()
-        self._log = logging.getLogger("tinyback.ServiceTester.%s" % self._name)
-        try:
-            service = getattr(services, self._name)
-        except AttributeError:
-            raise NameError("Unknown service \"%s\"" % self._name)
-        self._service = service()
+    def __init__(self, name, fixtures):
+        self._log = logging.getLogger("tinyback.ServiceTester.%s" % name)
+        self._service = services.factory(name)
         self._fixtures = fixtures
 
     def run(self):
