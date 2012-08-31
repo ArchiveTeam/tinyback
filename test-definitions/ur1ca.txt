@@ -1,0 +1,7 @@
+## Standard tests
+# example.org test
+s6uo|http://example.org/
+# Not found
+shadows|notfound
+# Blocked by SURBS blacklist
+5xeu|blocked

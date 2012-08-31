@@ -57,6 +57,58 @@ class Service:
         returns the URL or throws various exceptions when something went wrong.
         """
 
+class SimpleService(Service):
+    """
+    Simple URL shortener client
+
+    This is a generic service for URL shorteners. It is possible to specify
+    which HTTP status code corresponds to which result, but it is not required.
+    """
+
+    @abc.abstractproperty
+    def host(self):
+        """
+        Returns the hostname of the URL shortener
+        """
+
+    @property
+    def http_status_redirect(self):
+        return [301, 302]
+
+    @property
+    def http_status_no_redirect(self):
+        return [404]
+
+    @property
+    def http_status_code_blocked(self):
+        return [410]
+
+    @property
+    def http_status_blocked(self):
+        return []
+
+    def __init__(self):
+        self._conn = httplib.HTTPConnection(self.host)
+
+    def fetch(self, code):
+        self._conn.request("HEAD", "/" + code)
+        resp = self._conn.getresponse()
+        resp.read()
+
+        if resp.status in self.http_status_redirect:
+            location = resp.getheader("Location")
+            if not location:
+                raise exceptions.ServiceException("No Location header after HTTP status 301")
+            return location
+        elif resp.status in self.http_status_no_redirect:
+            raise exceptions.NoRedirectException()
+        elif resp.status in self.http_status_code_blocked:
+            raise exceptions.CodeBlockedException()
+        elif resp.status in self.http_status_blocked:
+            raise exceptions.BlockedException()
+        else:
+            raise exceptions.ServiceException("Unknown HTTP status %i" % resp.status)
+
 class Bitly(Service):
     """
     http://bit.ly/ URL shortener
@@ -247,6 +299,20 @@ class Tinyurl(Service):
 
         return match.group(1)
 
+class Ur1ca(SimpleService):
+
+    @property
+    def charset(self):
+        return "0123456789abcdefghijklmnopqrstuvwxyz"
+
+    @property
+    def host(self):
+        return "ur1.ca"
+
+    @property
+    def http_status_no_redirect(self):
+        return [200]
+
 def factory(name):
     if name == "bitly":
         return Bitly()
@@ -254,5 +320,7 @@ def factory(name):
         return Isgd()
     elif name == "tinyurl":
         return Tinyurl()
+    elif name == "ur1ca":
+        return Ur1ca()
     raise ValueError("Unknown service %s" % name)
 
