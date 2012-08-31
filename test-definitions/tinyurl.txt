@@ -17,6 +17,8 @@ cs|http://www.unicyclist.com/newgateway/get.php
 # Newline in URL
 # Test-definition doesn't support newlines
 #0i61s|http://tinyurl.com/npxpr\n
+# Non-ASCII characters in URL
+c5j|http://www.macuser.co.uk/macsurfer/php3/openframe.php3?page=/newnews/newsarti¸Z ÅHÖÿ¿?Ñ@4×ÿ¿??cle.php3?id=1990
 # Was previously an error page, but now is a normal redirect
 w|http://tinyurl.com/create.php?url=http://translate.google.com/translate?hl=en&u=http%3A%2F%2Fwww.buy-tees.com&langpair=en%7Cfr
 
