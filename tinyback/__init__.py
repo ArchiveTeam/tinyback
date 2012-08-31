@@ -75,8 +75,10 @@ class Reaper:
 
         if self._service.rate_limit:
             self._log.info("Rate limit: %i requests per %i seconds" % self._service.rate_limit)
-            self._rate_limit_bucket = 0
-            self._rate_limit_next = time.time()
+        else:
+            self._log.info("Service specifies no rate limit, using default of 5 requests per 5 seconds")
+        self._rate_limit_bucket = 0
+        self._rate_limit_next = time.time()
 
     def run(self):
         self._log.info("Starting Reaper")
@@ -91,6 +93,9 @@ class Reaper:
                 except exceptions.NoRedirectException:
                     self._log.debug("Code %s does not exist" % code)
                     break
+                except exceptions.BlockedException:
+                    self._log.info("Service is blocking us")
+                    self._rate_limit_bucket = 0
                 except exceptions.ServiceException as e:
                     self._log.warn("ServiceException(%s) on code %s" % (e, code))
                 else:
@@ -105,14 +110,15 @@ class Reaper:
         return fileobj
 
     def _rate_limit(self):
-        if not self._service.rate_limit:
-            return
         if self._rate_limit_bucket > 0:
             self._rate_limit_bucket -= 1
             return
+
         wait = self._rate_limit_next - time.time()
         if wait > 0:
             self._log.debug("Sleeping for %f seconds to satisfy rate limit" % wait)
             time.sleep(wait)
-        self._rate_limit_bucket = self._service.rate_limit[0] - 1
-        self._rate_limit_next = time.time() + self._service.rate_limit[1]
+
+        settings = self._service.rate_limit or (5, 5)
+        self._rate_limit_bucket = settings[0] - 1
+        self._rate_limit_next = time.time() + settings[1]
