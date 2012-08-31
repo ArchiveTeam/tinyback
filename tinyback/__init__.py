@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import gzip
 import hashlib
 import logging
 import tempfile
@@ -83,6 +84,7 @@ class Reaper:
     def run(self):
         self._log.info("Starting Reaper")
         fileobj = tempfile.TemporaryFile()
+        gzip_fileobj = gzip.GzipFile(mode="wb", fileobj=fileobj)
         for code in generators.factory(self._task["generator_type"], self._task["generator_options"]):
             tries = 0
             for i in range(self.MAX_TRIES):
@@ -103,10 +105,11 @@ class Reaper:
                         self._log.warn("URL for code %s contains newline" % code)
                     else:
                         self._log.debug("Code %s leads to URL '%s'" % (code, result.decode("ascii", "replace")))
-                        fileobj.write(code + "|")
-                        fileobj.write(result)
-                        fileobj.write("\n")
+                        gzip_fileobj.write(code + "|")
+                        gzip_fileobj.write(result)
+                        gzip_fileobj.write("\n")
                     break
+        gzip_fileobj.close()
         return fileobj
 
     def _rate_limit(self):
