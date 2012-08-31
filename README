@@ -1,4 +1,0 @@
-TinyBack is yet another take at backing up URL shorteners like TinyURL and
-bit.ly. Contrary to other people that are trying to backup those services, I
-intend to release the raw datasets of (provider, short code) -> (long url)
-mappings.
