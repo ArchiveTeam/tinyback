@@ -151,12 +151,12 @@ class Bitly(Service):
             if not location:
                 raise exceptions.ServiceException("No Location header after HTTP status 302")
             return self._parse_warning_url(code, location)
+        elif resp.status == 403:
+            raise exceptions.BlockedException()
         elif resp.status == 404:
             raise exceptions.NoRedirectException()
         elif resp.status == 410:
             raise exceptions.CodeBlockedException()
-        elif resp.status == 500:
-            raise exceptions.BlockedException()
         else:
             raise exceptions.ServiceException("Unknown HTTP status %i" % resp.status)
 
