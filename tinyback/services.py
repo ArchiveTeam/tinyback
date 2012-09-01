@@ -118,6 +118,12 @@ class Bitly(Service):
     def charset(self):
         return "012356789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_"
 
+    @property
+    def rate_limit(self):
+        # At least for the API, bit.ly has an unspecified limit that resets
+        # hourly. Assume that the same is true for non-API usage.
+        return (1000000, 3600)
+
     def __init__(self):
         self._conn = httplib.HTTPConnection("bit.ly")
 
@@ -149,6 +155,8 @@ class Bitly(Service):
             raise exceptions.NoRedirectException()
         elif resp.status == 410:
             raise exceptions.CodeBlockedException()
+        elif resp.status == 500:
+            raise exceptions.BlockedException()
         else:
             raise exceptions.ServiceException("Unknown HTTP status %i" % resp.status)
 
