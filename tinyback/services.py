@@ -154,12 +154,6 @@ class Bitly(HTTPService):
         return "012356789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_"
 
     @property
-    def rate_limit(self):
-        # At least for the API, bit.ly has an unspecified limit that resets
-        # hourly. Assume that the same is true for non-API usage.
-        return (1000000, 3600)
-
-    @property
     def url(self):
         return "http://bit.ly/"
 

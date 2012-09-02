@@ -76,28 +76,33 @@ class Reaper:
 
         if self._service.rate_limit:
             self._log.info("Rate limit: %i requests per %i seconds" % self._service.rate_limit)
-        else:
-            self._log.info("Service specifies no rate limit, using default of 5 requests per 5 seconds")
-        self._rate_limit_bucket = 0
-        self._rate_limit_next = time.time()
+            self._rate_limit_bucket = 0
+            self._rate_limit_next = time.time()
 
     def run(self):
         self._log.info("Starting Reaper")
         fileobj = tempfile.TemporaryFile()
         gzip_fileobj = gzip.GzipFile(mode="wb", fileobj=fileobj)
+
         for code in generators.factory(self._task["generator_type"], self._task["generator_options"]):
+            blocked = 0
             tries = 0
-            for i in range(self.MAX_TRIES):
+            while tries < (self.MAX_TRIES + blocked):
+                tries += 1
                 self._rate_limit()
-                self._log.debug("Fetching code %s, try %i" % (code, i))
+                self._log.debug("Fetching code %s, try %i" % (code, tries))
                 try:
                     result = self._service.fetch(code)
                 except exceptions.NoRedirectException:
                     self._log.debug("Code %s does not exist" % code)
                     break
                 except exceptions.BlockedException:
-                    self._log.info("Service is blocking us")
-                    self._rate_limit_bucket = 0
+                    if self._service.rate_limit:
+                        self._rate_limit_bucket = 0
+                    blocked += 1
+                    wait = (min(5 ** blocked, 3600))
+                    self._log.info("Service blocked us %i times, backing off for %i seconds" % (blocked, wait))
+                    time.sleep(wait)
                 except exceptions.ServiceException as e:
                     self._log.warn("ServiceException(%s) on code %s" % (e, code))
                 else:
@@ -109,10 +114,14 @@ class Reaper:
                         gzip_fileobj.write(result)
                         gzip_fileobj.write("\n")
                     break
+
         gzip_fileobj.close()
         return fileobj
 
     def _rate_limit(self):
+        if not self._service.rate_limit:
+            return
+
         if self._rate_limit_bucket > 0:
             self._rate_limit_bucket -= 1
             return
@@ -122,6 +131,6 @@ class Reaper:
             self._log.debug("Sleeping for %f seconds to satisfy rate limit" % wait)
             time.sleep(wait)
 
-        settings = self._service.rate_limit or (5, 5)
+        settings = self._service.rate_limit
         self._rate_limit_bucket = settings[0] - 1
         self._rate_limit_next = time.time() + settings[1]
