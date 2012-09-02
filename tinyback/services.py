@@ -57,42 +57,68 @@ class Service:
         returns the URL or throws various exceptions when something went wrong.
         """
 
-class SimpleService(Service):
+class HTTPService(Service):
     """
-    Simple URL shortener client
+    Httplib-based URL shortener client
+
+    Abstract serivce class to help with using httplib.
+    """
+
+    @abc.abstractproperty
+    def url(self):
+        """
+        Returns the base URL of the URL shortener
+        """
+
+    def __init__(self):
+        parsed_url = urlparse.urlparse(self.url)
+        self._path = parsed_url.path or "/"
+
+        self._conn = httplib.HTTPConnection(parsed_url.netloc)
+
+    def _http_fetch(self, code, method = "HEAD"):
+        self._conn.request(method, self._path + code)
+
+        return self._conn.getresponse()
+
+class SimpleService(HTTPService):
+    """
+    Simple HTTP URL shortener client
 
     This is a generic service for URL shorteners. It is possible to specify
     which HTTP status code corresponds to which result, but it is not required.
     """
 
-    @abc.abstractproperty
-    def host(self):
-        """
-        Returns the hostname of the URL shortener
-        """
-
     @property
     def http_status_redirect(self):
+        """
+        HTTP status codes that indicate proper redirect
+        """
         return [301, 302]
 
     @property
     def http_status_no_redirect(self):
+        """
+        HTTP status codes that indicate no redirect
+        """
         return [404]
 
     @property
     def http_status_code_blocked(self):
+        """
+        HTTP status code that indicates the code/long URL was blocked
+        """
         return [410]
 
     @property
     def http_status_blocked(self):
-        return []
-
-    def __init__(self):
-        self._conn = httplib.HTTPConnection(self.host)
+        """
+        HTTP status code that indicates that the service is blocking us
+        """
+        return [403, 420, 429]
 
     def fetch(self, code):
-        self._conn.request("HEAD", "/" + code)
-        resp = self._conn.getresponse()
+        resp = self._http_fetch(code)
         resp.read()
 
         if resp.status in self.http_status_redirect:
@@ -109,7 +135,7 @@ class SimpleService(Service):
         else:
             raise exceptions.ServiceException("Unknown HTTP status %i" % resp.status)
 
-class Bitly(Service):
+class Bitly(HTTPService):
     """
     http://bit.ly/ URL shortener
     """
@@ -124,12 +150,12 @@ class Bitly(Service):
         # hourly. Assume that the same is true for non-API usage.
         return (1000000, 3600)
 
-    def __init__(self):
-        self._conn = httplib.HTTPConnection("bit.ly")
+    @property
+    def url(self):
+        return "http://bit.ly/"
 
     def fetch(self, code):
-        self._conn.request("HEAD", "/" + code)
-        resp = self._conn.getresponse()
+        resp = self._http_fetch(code)
         resp.read()
 
         if resp.status == 301:
@@ -142,7 +168,6 @@ class Bitly(Service):
                 # Weird "bundles" redirect, forces connection close despite
                 # sending Keep-Alive header
                 self._conn.close()
-                self._conn.connect()
                 raise exceptions.CodeBlockedException()
             else:
                 raise exceptions.ServiceException("Unknown HTTP reason %s after HTTP status 301" % resp.reason)
@@ -171,7 +196,7 @@ class Bitly(Service):
             raise exceptions.ServiceException("Hash mismatch forr HTTP status 302")
         return query["url"][0]
 
-class Isgd(Service):
+class Isgd(HTTPService):
     """
     http://is.gd/ URL shortener
     """
@@ -188,13 +213,13 @@ class Isgd(Service):
     def rate_limit(self):
         return (60, 60)
 
-    def __init__(self):
-        self._conn = httplib.HTTPConnection("is.gd")
+    @property
+    def url(self):
+        return "http://is.gd/"
 
     def fetch(self, code):
-        self._conn.request("HEAD", "/" + code)
-        resp = self._conn.getresponse()
-        resp.read() # Head only
+        resp = self._http_fetch(code)
+        resp.read()
 
         if resp.status == 200:
             return self._fetch_blocked(code)
@@ -211,8 +236,7 @@ class Isgd(Service):
             raise exceptions.ServiceException("Unknown HTTP status %i" % resp.status)
 
     def _fetch_blocked(self, code):
-        self._conn.request("GET", "/" + code)
-        resp = self._conn.getresponse()
+        resp = self._http_fetch(code, "GET")
         data = resp.read()
 
         if resp.status != 200:
@@ -234,19 +258,18 @@ class Isgd(Service):
 
         return data[:position]
 
-class Tinyurl(Service):
+class Tinyurl(HTTPService):
 
     @property
     def charset(self):
         return "0123456789abcdefghijklmnopqrstuvwxyz"
 
-
-    def __init__(self):
-        self._conn = httplib.HTTPConnection("tinyurl.com")
+    @property
+    def url(self):
+        return "http://tinyurl.com/"
 
     def fetch(self, code):
-        self._conn.request("HEAD", "/" + code)
-        resp = self._conn.getresponse()
+        resp = self._http_fetch(code)
         resp.read()
 
         if resp.status == 200:
@@ -263,7 +286,6 @@ class Tinyurl(Service):
         elif resp.status == 500:
             # Some "errorhelp" URLs result in HTTP status 500, which goes away when trying a different server
             self._conn.close()
-            self._conn.connect()
             raise exceptions.ServiceException("HTTP status 500")
         else:
             raise exceptions.ServiceException("Unknown HTTP status %i" % resp.status)
@@ -271,8 +293,7 @@ class Tinyurl(Service):
         return resp.status
 
     def _fetch_200(self, code):
-        self._conn.request("GET", "/" + code)
-        resp = self._conn.getresponse()
+        resp = self._http_fetch(code, "GET")
         data = resp.read()
 
         if resp.status != 200:
@@ -314,8 +335,8 @@ class Ur1ca(SimpleService):
         return "0123456789abcdefghijklmnopqrstuvwxyz"
 
     @property
-    def host(self):
-        return "ur1.ca"
+    def url(self):
+        return "http://ur1.ca/"
 
     @property
     def http_status_no_redirect(self):
