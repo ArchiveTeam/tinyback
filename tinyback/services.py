@@ -17,6 +17,7 @@
 import abc
 import httplib
 import re
+import socket
 import urlparse
 
 from tinyback import exceptions
@@ -77,9 +78,18 @@ class HTTPService(Service):
         self._conn = httplib.HTTPConnection(parsed_url.netloc)
 
     def _http_fetch(self, code, method = "HEAD"):
-        self._conn.request(method, self._path + code)
-
-        return self._conn.getresponse()
+        try:
+            self._conn.request(method, self._path + code)
+            resp = self._conn.getresponse()
+            if method == "HEAD":
+                resp.read()
+            return resp
+        except httplib.HTTPException as e:
+            self._conn.close()
+            raise exceptions.ServiceException("HTTP exception: %s" % e)
+        except socket.error as e:
+            self._conn.close()
+            raise exceptions.ServiceException("Socket error: %s" % e)
 
 class SimpleService(HTTPService):
     """
@@ -119,7 +129,6 @@ class SimpleService(HTTPService):
 
     def fetch(self, code):
         resp = self._http_fetch(code)
-        resp.read()
 
         if resp.status in self.http_status_redirect:
             location = resp.getheader("Location")
@@ -156,7 +165,6 @@ class Bitly(HTTPService):
 
     def fetch(self, code):
         resp = self._http_fetch(code)
-        resp.read()
 
         if resp.status == 301:
             location = resp.getheader("Location")
@@ -219,7 +227,6 @@ class Isgd(HTTPService):
 
     def fetch(self, code):
         resp = self._http_fetch(code)
-        resp.read()
 
         if resp.status == 200:
             return self._fetch_blocked(code)
@@ -270,7 +277,6 @@ class Tinyurl(HTTPService):
 
     def fetch(self, code):
         resp = self._http_fetch(code)
-        resp.read()
 
         if resp.status == 200:
             return self._fetch_200(code)
