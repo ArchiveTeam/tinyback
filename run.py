@@ -55,7 +55,7 @@ def main():
     options = parse_options()
 
     logging.basicConfig(level=options.loglevel,
-        format="%(name)s: %(message)s")
+        format="%(asctime)s %(name)s %(levelname)s: %(message)s")
 
     tracker = tinyback.tracker.Tracker(options.tracker)
     if options.clear:
