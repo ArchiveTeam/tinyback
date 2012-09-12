@@ -258,7 +258,7 @@ class Isgd(HTTPService):
         if position == -1:
             raise exceptions.ServiceException("Unexpected response on status 200")
 
-        return data[:position]
+        return HTMLParser.HTMLParser().unescape(data[:position])
 
 class Tinyurl(HTTPService):
 
@@ -330,7 +330,7 @@ class Tinyurl(HTTPService):
         if not match:
             raise exceptions.ServiceException("No redirect on \"tinyurl redirect\" page on HTTP status 200")
 
-        return match.group(1)
+        return HTMLParser.HTMLParser().unescape(match.group(1))
 
     def _preview(self, code):
         resp = self._http_fetch("preview.php?num=" + code, "GET")
