@@ -22,6 +22,12 @@ c5j|http://www.macuser.co.uk/macsurfer/php3/openframe.php3?page=/newnews/newsart
 # Was previously an error page, but now is a normal redirect
 w|http://tinyurl.com/create.php?url=http://translate.google.com/translate?hl=en&u=http%3A%2F%2Fwww.buy-tees.com&langpair=en%7Cfr
 
+## Advertisement
+# Normal
+sj27|http://www.tripadvisor.com/Hotel_Review-g147278-d240967-Reviews-Hotel_Kura_Hulanda-Willemstad_Curacao.html
+# HTML-escaped characters
+sinz|http://www.bananarepublic.com/browse/product/202/product_202834.htm?cs_catalog=BR_HOLIDAY1_2003&cs_category=201002
+
 ## Blocked
 # URL Terminated page
 dick|blocked

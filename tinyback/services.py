@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import abc
+import HTMLParser
 import httplib
 import re
 import socket
@@ -278,6 +279,9 @@ class Tinyurl(HTTPService):
             location = resp.getheader("Location")
             if not location:
                 raise exceptions.CodeBlockedException("No Location header after HTTP status 301")
+            tiny = resp.getheader("X-tiny")
+            if tiny and tiny[:3] == "aff":
+                return self._preview(code)
             return location
         elif resp.status == 302:
             raise exceptions.CodeBlockedException()
@@ -327,6 +331,19 @@ class Tinyurl(HTTPService):
             raise exceptions.ServiceException("No redirect on \"tinyurl redirect\" page on HTTP status 200")
 
         return match.group(1)
+
+    def _preview(self, code):
+        resp = self._http_fetch("preview.php?num=" + code, "GET")
+        data = resp.read()
+
+        if resp.status != 200:
+            raise exceptions.ServiceException("Unexpected HTTP status %i on preview page" % resp.status)
+
+        match = re.search("<a id=\"redirecturl\" href=\"(.*?)\">Proceed to this site.</a>", data, re.DOTALL)
+        if not match:
+            raise exceptions.ServiceException("No redirect on preview page")
+
+        return HTMLParser.HTMLParser().unescape(match.group(1))
 
 class Ur1ca(SimpleService):
 
