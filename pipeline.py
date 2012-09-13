@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 pipeline = Pipeline(
     ExternalProcess("Tinyback", ["./run.py",
-        "-t", "http://10.0.0.154:8080/",
+        "-t", "http://tracker.tinyarchive.org/v1//",
         "-o",
         "-s", "60"])
 )
