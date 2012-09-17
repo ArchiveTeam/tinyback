@@ -76,7 +76,7 @@ class HTTPService(Service):
         parsed_url = urlparse.urlparse(self.url)
         self._path = parsed_url.path or "/"
 
-        self._conn = httplib.HTTPConnection(parsed_url.netloc)
+        self._conn = httplib.HTTPConnection(parsed_url.netloc, timeout=30)
 
     def _http_fetch(self, code, method = "HEAD"):
         try:
