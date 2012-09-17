@@ -155,6 +155,10 @@ class Bitly(HTTPService):
         return "012356789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_"
 
     @property
+    def rate_limit(self):
+        return (2, 1)
+
+    @property
     def url(self):
         return "http://bit.ly/"
 
