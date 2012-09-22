@@ -40,7 +40,10 @@ def parse_options():
 
 def run_thread(options, tracker):
     while True:
-        task = tracker.fetch()
+        try:
+            task = tracker.fetch()
+        except:
+            task = None
 
         if not task:
             if options.sleep <= 0:
