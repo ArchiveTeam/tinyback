@@ -1,22 +1,18 @@
 #!/usr/bin/env python
 
-import logging
-import sys
-
 from seesaw.externalprocess import *
 from seesaw.pipeline import *
 from seesaw.project import *
-from seesaw.task import *
-
-logging.basicConfig(level=logging.DEBUG)
 
 pipeline = Pipeline(
-    ExternalProcess("Tinyback", ["./run.py",
-        "-t", "http://tracker.tinyarchive.org/v1//",
-        "-o",
-        "-s", "60"])
+    ExternalProcess("TinyBack", ["./run.py",
+        "--tracker=http://tracker.tinyarchive.org/v1/",
+        "--sleep=60",
+        "--one-task",
+        "--temp-dir=./data",
+        "--username=" + downloader
+        ])
 )
-
 
 project = Project(
     title = "URLTeam",

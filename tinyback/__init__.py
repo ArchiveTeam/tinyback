@@ -79,9 +79,9 @@ class Reaper:
             self._rate_limit_bucket = 0
             self._rate_limit_next = time.time()
 
-    def run(self):
+    def run(self, temp_dir=None):
         self._log.info("Starting Reaper")
-        fileobj = tempfile.TemporaryFile()
+        fileobj = tempfile.TemporaryFile(dir=temp_dir)
         gzip_fileobj = gzip.GzipFile(mode="wb", fileobj=fileobj)
 
         for code in generators.factory(self._task["generator_type"], self._task["generator_options"]):

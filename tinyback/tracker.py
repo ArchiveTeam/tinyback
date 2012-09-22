@@ -33,11 +33,15 @@ class Tracker:
             self._log.info("No tasks available")
         return task
 
-    def put(self, task, data_file):
+    def put(self, task, data_file, username=None):
         task_id = task["id"]
         data_file.seek(0)
 
-        status, task= self._request("POST", "task/put", {"id": task_id}, data_file)
+        params = {"id": task_id}
+        if username:
+            params["username"] = username
+
+        status, task= self._request("POST", "task/put", params, data_file)
         if status == httplib.CONFLICT:
             self._log.warn("Server refused data for task %s" % task_id)
         elif status == httplib.OK:

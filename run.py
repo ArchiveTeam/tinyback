@@ -23,6 +23,10 @@ def parse_options():
         metavar="N")
     parser.add_option("-o", "--one-task", action="store_true", dest="one_task",
         help="Only fetch a single task (per thread), then terminate")
+    parser.add_option("--temp-dir", dest="temp_dir",
+        help="Set directory for temporary files to DIR", metavar="DIR")
+    parser.add_option("-u", "--username", dest="username",
+        help="Set tracker username")
     parser.add_option("-d", "--debug", action="store_const", dest="loglevel",
         const=logging.DEBUG, default=logging.INFO, help="Enable debug output")
 
@@ -44,8 +48,8 @@ def run_thread(options, tracker):
             time.sleep(options.sleep)
         else:
             reaper = tinyback.Reaper(task)
-            fileobj = reaper.run()
-            tracker.put(task, fileobj)
+            fileobj = reaper.run(options.temp_dir)
+            tracker.put(task, fileobj, options.username)
             fileobj.close()
 
         if options.one_task:
