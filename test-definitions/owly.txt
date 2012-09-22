@@ -1,0 +1,5 @@
+## Standard tests
+# example.org test
+dUmbJ|http://example.org/
+# Not found
+shadows|notfound

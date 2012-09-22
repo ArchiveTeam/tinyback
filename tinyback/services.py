@@ -282,6 +282,19 @@ class Klam(SimpleService):
     def url(self):
         return "http://kl.am/"
 
+class Owly(SimpleService):
+    """
+    http://ow.ly/
+    """
+
+    @property
+    def charset(self):
+        return "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+    @property
+    def url(self):
+        return "http://ow.ly/"
+
 class Tinyurl(HTTPService):
     """
     http://tinyurl.com/
@@ -398,6 +411,8 @@ def factory(name):
         return Isgd()
     elif name == "klam":
         return Klam()
+    elif name == "owly":
+        return Owly()
     elif name == "tinyurl":
         return Tinyurl()
     elif name == "ur1ca":
