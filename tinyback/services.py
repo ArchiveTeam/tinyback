@@ -264,6 +264,24 @@ class Isgd(HTTPService):
 
         return HTMLParser.HTMLParser().unescape(data[:position])
 
+class Klam(SimpleService):
+    """
+    http://kl.am/ - URL shortener for Internet Marketers
+    """
+
+    @property
+    def charset(self):
+        """
+        Klam charset
+
+        This is just a guess since the service does not allow creation of new URLs.
+        """
+        return "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+    @property
+    def url(self):
+        return "http://kl.am/"
+
 class Tinyurl(HTTPService):
 
     @property
@@ -372,6 +390,8 @@ def factory(name):
         return Bitly()
     elif name == "isgd":
         return Isgd()
+    elif name == "klam":
+        return Klam()
     elif name == "tinyurl":
         return Tinyurl()
     elif name == "ur1ca":
