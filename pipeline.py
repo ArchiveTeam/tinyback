@@ -10,7 +10,7 @@ pipeline = Pipeline(
         "--sleep=60",
         "--one-task",
         "--temp-dir=./data",
-        "--username=" + str(downloader)
+        "--username=" + str(downloader.value)
         ])
 )
 
