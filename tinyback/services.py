@@ -271,6 +271,10 @@ class Tinyurl(HTTPService):
         return "0123456789abcdefghijklmnopqrstuvwxyz"
 
     @property
+    def rate_limit(self):
+        return (2, 1)
+
+    @property
     def url(self):
         return "http://tinyurl.com/"
 
