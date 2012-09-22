@@ -48,7 +48,7 @@ class Service:
         requests that are allowed in the timespan denoted by the second element
         (in seconds). When there is no rate-limit, simply returns None.
         """
-        return None
+        return (2, 1)
 
     @abc.abstractmethod
     def fetch(self, code):
@@ -153,10 +153,6 @@ class Bitly(HTTPService):
     @property
     def charset(self):
         return "012356789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_"
-
-    @property
-    def rate_limit(self):
-        return (2, 1)
 
     @property
     def url(self):
@@ -305,10 +301,6 @@ class Tinyurl(HTTPService):
         return "0123456789abcdefghijklmnopqrstuvwxyz"
 
     @property
-    def rate_limit(self):
-        return (2, 1)
-
-    @property
     def url(self):
         return "http://tinyurl.com/"
 
@@ -395,6 +387,10 @@ class Ur1ca(SimpleService):
     @property
     def charset(self):
         return "0123456789abcdefghijklmnopqrstuvwxyz"
+
+    @property
+    def rate_limit(self):
+        return None
 
     @property
     def url(self):
