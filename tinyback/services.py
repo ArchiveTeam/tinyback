@@ -147,7 +147,7 @@ class SimpleService(HTTPService):
 
 class Bitly(HTTPService):
     """
-    http://bit.ly/ URL shortener
+    http://bit.ly/
     """
 
     @property
@@ -205,7 +205,7 @@ class Bitly(HTTPService):
 
 class Isgd(HTTPService):
     """
-    http://is.gd/ URL shortener
+    http://is.gd/
     """
 
     RATE_LIMIT_STRING = "<div id=\"main\"><p>Rate limit exceeded - please wait 1 minute before accessing more shortened URLs</p></div>"
@@ -266,7 +266,7 @@ class Isgd(HTTPService):
 
 class Klam(SimpleService):
     """
-    http://kl.am/ - URL shortener for Internet Marketers
+    http://kl.am/
     """
 
     @property
@@ -283,6 +283,9 @@ class Klam(SimpleService):
         return "http://kl.am/"
 
 class Tinyurl(HTTPService):
+    """
+    http://tinyurl.com/
+    """
 
     @property
     def charset(self):
@@ -372,6 +375,9 @@ class Tinyurl(HTTPService):
         return HTMLParser.HTMLParser().unescape(match.group(1))
 
 class Ur1ca(SimpleService):
+    """
+    http://ur1.ca/
+    """
 
     @property
     def charset(self):
