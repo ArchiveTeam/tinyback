@@ -258,7 +258,8 @@ class Isgd(HTTPService):
         if position == -1:
             raise exceptions.ServiceException("Unexpected response on status 200")
 
-        return HTMLParser.HTMLParser().unescape(data[:position]).encode("utf-8")
+        url = data[:position].decode("utf-8")
+        return HTMLParser.HTMLParser().unescape(url).encode("utf-8")
 
 class Klam(SimpleService):
     """

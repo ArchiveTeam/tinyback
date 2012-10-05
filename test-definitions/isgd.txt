@@ -7,8 +7,10 @@ oycsuls|notfound
 ## Link Disabled
 # Normal
 mBAh|http://pocketexpress.com/assets/img/channels/icn-extras.jpg
-# UTF-8 code points
+# Properly encoded UTF-8 code points
 8KlSw|http://mediapolitics.co.cc/o’reilly-tells-conservatives-to-stop-‘bashing’-obama-‘does-obama-bashing-accomplish-anything’/
+# Unencoded UTF-8 code points
+5McdG|http://analyzerads.com/CPCredairector.aspx?userId=ranencarmel&url=http://svibe.mynusystem.com/lc2.php&cid=200911111643301&aid=15&q=עבודה
 
 ## 502 Error
 meIw|blocked
