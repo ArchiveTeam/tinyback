@@ -258,7 +258,7 @@ class Isgd(HTTPService):
         if position == -1:
             raise exceptions.ServiceException("Unexpected response on status 200")
 
-        return HTMLParser.HTMLParser().unescape(data[:position])
+        return HTMLParser.HTMLParser().unescape(data[:position]).encode("utf-8")
 
 class Klam(SimpleService):
     """
@@ -364,7 +364,7 @@ class Tinyurl(HTTPService):
         if not match:
             raise exceptions.ServiceException("No redirect on \"tinyurl redirect\" page on HTTP status 200")
 
-        return HTMLParser.HTMLParser().unescape(match.group(1))
+        return HTMLParser.HTMLParser().unescape(match.group(1)).encode("utf-8")
 
     def _preview(self, code):
         resp = self._http_fetch("preview.php?num=" + code, "GET")
@@ -377,7 +377,7 @@ class Tinyurl(HTTPService):
         if not match:
             raise exceptions.ServiceException("No redirect on preview page")
 
-        return HTMLParser.HTMLParser().unescape(match.group(1))
+        return HTMLParser.HTMLParser().unescape(match.group(1)).encode("utf-8")
 
 class Ur1ca(SimpleService):
     """

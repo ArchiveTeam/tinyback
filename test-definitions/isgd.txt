@@ -5,7 +5,10 @@ gmYZc|http://www.example.org/
 oycsuls|notfound
 
 ## Link Disabled
+# Normal
 mBAh|http://pocketexpress.com/assets/img/channels/icn-extras.jpg
+# UTF-8 code points
+8KlSw|http://mediapolitics.co.cc/o’reilly-tells-conservatives-to-stop-‘bashing’-obama-‘does-obama-bashing-accomplish-anything’/
 
 ## 502 Error
 meIw|blocked
