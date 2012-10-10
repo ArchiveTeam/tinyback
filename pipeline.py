@@ -4,13 +4,20 @@ from seesaw.externalprocess import *
 from seesaw.pipeline import *
 from seesaw.project import *
 
+if isinstance(downloader, str):
+    username = downloader
+elif downloader.value:
+    username = downloader.value
+else:
+    username = "warrior"
+
 pipeline = Pipeline(
     ExternalProcess("TinyBack", ["./run.py",
         "--tracker=http://tracker.tinyarchive.org/v1/",
         "--sleep=60",
         "--one-task",
         "--temp-dir=./data",
-        "--username=" + str(downloader.value or "warrior")
+        "--username=" + username
         ])
 )
 
