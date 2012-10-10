@@ -279,7 +279,7 @@ class Klam(SimpleService):
     def url(self):
         return "http://kl.am/"
 
-class Owly(SimpleService):
+class Owly(HTTPService):
     """
     http://ow.ly/
     """
@@ -291,6 +291,35 @@ class Owly(SimpleService):
     @property
     def url(self):
         return "http://ow.ly/"
+
+    def fetch(self, code):
+        resp = self._http_fetch(code)
+        if resp.status == 200:
+            return self._fetch_blocked(code)
+        elif resp.status == 301:
+            location = resp.getheader("Location")
+            if not location:
+                raise exceptions.CodeBlockedException("No Location header after HTTP status 301")
+            return location
+        elif resp.status == 404:
+            raise exceptions.NoRedirectException()
+        else:
+            raise exceptions.ServiceException("Unknown HTTP status %i" % resp.status)
+
+    def _fetch_blocked(self, code):
+        resp = self._http_fetch(code, "GET")
+        data = resp.read()
+
+        if resp.status != 200:
+            raise exceptions.ServiceException("HTTP status changed from 200 to %i on second request" % resp.status)
+
+        match = re.search("<a class=\"btn ignore\" href=\"(.*?)\" title=", data)
+        if not match:
+            raise exceptions.ServiceException("Could not find target URL in safety warning")
+
+        url = match.group(1).decode("utf-8")
+        return HTMLParser.HTMLParser().unescape(url).encode("utf-8")
+
 
 class Tinyurl(HTTPService):
     """

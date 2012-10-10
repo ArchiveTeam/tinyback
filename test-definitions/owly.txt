@@ -3,3 +3,6 @@
 dUmbJ|http://example.org/
 # Not found
 shadows|notfound
+
+## Blocked
+aU90|http://susanberland.yolasite.com/index/my-gay-marriage-project
