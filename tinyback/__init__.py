@@ -53,7 +53,7 @@ class ServiceTester:
             try:
                 result = self._service.fetch(code)
                 success = isinstance(expected, str) and result == expected
-            except exceptions.ServiceException as e:
+            except exceptions.ServiceException, e:
                 result = e
                 success = (not isinstance(expected, str)) and issubclass(expected, exceptions.ServiceException) and isinstance(result, expected)
 
