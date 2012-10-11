@@ -85,10 +85,10 @@ class HTTPService(Service):
             if method == "HEAD":
                 resp.read()
             return resp
-        except httplib.HTTPException as e:
+        except httplib.HTTPException, e:
             self._conn.close()
             raise exceptions.ServiceException("HTTP exception: %s" % e)
-        except socket.error as e:
+        except socket.error, e:
             self._conn.close()
             raise exceptions.ServiceException("Socket error: %s" % e)
 
