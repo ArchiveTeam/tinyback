@@ -103,7 +103,7 @@ class Reaper:
                     wait = (min(5 ** blocked, 3600))
                     self._log.info("Service blocked us %i times, backing off for %i seconds" % (blocked, wait))
                     time.sleep(wait)
-                except exceptions.ServiceException as e:
+                except exceptions.ServiceException, e:
                     self._log.warn("ServiceException(%s) on code %s" % (e, code))
                 else:
                     if "\n" in result or "\r" in result:
