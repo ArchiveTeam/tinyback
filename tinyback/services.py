@@ -17,6 +17,7 @@
 import abc
 import HTMLParser
 import httplib
+import platform
 import re
 import socket
 import urlparse
@@ -76,7 +77,11 @@ class HTTPService(Service):
         parsed_url = urlparse.urlparse(self.url)
         self._path = parsed_url.path or "/"
 
-        self._conn = httplib.HTTPConnection(parsed_url.netloc, timeout=30)
+        version = platform.python_version_tuple()
+        if version[0] == 2 and version[1] <= 5:
+            self._conn = httplib.HTTPConnection(parsed_url.netloc)
+        else:
+            self._conn = httplib.HTTPConnection(parsed_url.netloc, timeout=30)
 
     def _http_fetch(self, code, method = "HEAD"):
         try:
