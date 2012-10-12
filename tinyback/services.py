@@ -78,7 +78,7 @@ class HTTPService(Service):
         self._path = parsed_url.path or "/"
 
         version = platform.python_version_tuple()
-        if version[0] == 2 and version[1] <= 5:
+        if int(version[0]) == 2 and int(version[1]) <= 5:
             self._conn = httplib.HTTPConnection(parsed_url.netloc)
         else:
             self._conn = httplib.HTTPConnection(parsed_url.netloc, timeout=30)
