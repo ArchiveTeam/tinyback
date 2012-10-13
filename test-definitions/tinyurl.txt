@@ -21,6 +21,8 @@ cs|http://www.unicyclist.com/newgateway/get.php
 c5j|http://www.macuser.co.uk/macsurfer/php3/openframe.php3?page=/newnews/newsarti¸Z ÅHÖÿ¿?Ñ@4×ÿ¿??cle.php3?id=1990
 # Was previously an error page, but now is a normal redirect
 w|http://tinyurl.com/create.php?url=http://translate.google.com/translate?hl=en&u=http%3A%2F%2Fwww.buy-tees.com&langpair=en%7Cfr
+# Special characters in long URL
+2zln|http://tinyurl.com/create.php?url=http://www.saq.com/pls/devsaq/pb_appel_page?p_iden_tran=5654289&p_modi_url=1124093923&p_code_page=info_saq_details.html&p_tab_para=vide!vide&p_tab_para=P_ID_COMM!976#montréal
 
 ## Advertisement
 # Normal
