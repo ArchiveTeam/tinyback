@@ -4,10 +4,8 @@ from seesaw.externalprocess import *
 from seesaw.pipeline import *
 from seesaw.project import *
 
-if isinstance(downloader, str):
+if downloader:
     username = downloader
-elif downloader.value:
-    username = downloader.value
 else:
     username = "warrior"
 
@@ -17,7 +15,7 @@ pipeline = Pipeline(
         "--sleep=60",
         "--one-task",
         "--temp-dir=./data",
-        "--username=" + username
+        "--username", username
         ])
 )
 
