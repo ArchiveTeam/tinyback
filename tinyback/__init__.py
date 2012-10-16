@@ -1,5 +1,7 @@
 # TinyBack - A tiny web scraper
 # Copyright (C) 2012 David Triendl
+# Copyright (C) 2012 Sven Slootweg
+# Copyright (C) 2012 Alard
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
