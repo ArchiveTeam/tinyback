@@ -74,6 +74,9 @@ class Reaper:
         self._task = task
         self._service = services.factory(self._task["service"])
 
+        self._codes_tried = 0
+        self._urls_found = 0
+
         if self._service.rate_limit:
             self._log.info("Rate limit: %i requests per %i seconds" % self._service.rate_limit)
             self._rate_limit_bucket = 0
@@ -85,6 +88,7 @@ class Reaper:
         gzip_fileobj = gzip.GzipFile(mode="wb", fileobj=fileobj)
 
         for code in generators.factory(self._task["generator_type"], self._task["generator_options"]):
+            self._codes_tried += 1
             blocked = 0
             tries = 0
             while tries < (self.MAX_TRIES + blocked):
@@ -109,6 +113,7 @@ class Reaper:
                     if "\n" in result or "\r" in result:
                         self._log.warn("URL for code %s contains newline" % code)
                     else:
+                        self._urls_found += 1
                         self._log.debug("Code %s leads to URL '%s'" % (code, result.decode("ascii", "replace")))
                         gzip_fileobj.write(code + "|")
                         gzip_fileobj.write(result)
@@ -116,6 +121,7 @@ class Reaper:
                     break
 
         gzip_fileobj.close()
+        self._log.info("Reaper examined %d codes and found %d URLs" % (self._codes_tried, self._urls_found))
         return fileobj
 
     def _rate_limit(self):
