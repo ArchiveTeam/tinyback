@@ -15,7 +15,9 @@ Warrior](http://www.archiveteam.org/index.php?title=ArchiveTeam_Warrior)
 infrastructure.
 
 # Supported URL shorteners
-* [Bit.ly](http://www.bitly.com/)
-* [Is.gd](http://www.is.gd/)
-* [TinyURL.com](http://www.tinyurl.com/)
-* [ur1 Generator](http://ur1.ca/)
+* [Bitly](http://www.bitly.com/)
+* [Isgd](http://www.is.gd/)
+* [Klam](http://kl.am/)
+* [Owly](http://ow.ly/url/shorten-url)
+* [TinyURL](http://www.tinyurl.com/)
+* [Ur1ca](http://ur1.ca/)
