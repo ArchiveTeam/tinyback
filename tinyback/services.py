@@ -209,9 +209,6 @@ class Isgd(HTTPService):
     http://is.gd/
     """
 
-    RATE_LIMIT_STRING = "<div id=\"main\"><p>Rate limit exceeded - please wait 1 minute before accessing more shortened URLs</p></div>"
-    BLOCKED_STRING_START = "<p>For reference and to help those fighting spam the original destination of this URL is given below (we strongly recommend you don't visit it since it may damage your PC): -<br />"
-    BLOCKED_STRING_END = "</p><h2>is.gd</h2><p>is.gd is a free service used to shorten long URLs."
 
     @property
     def charset(self):
@@ -229,7 +226,7 @@ class Isgd(HTTPService):
         resp = self._http_fetch(code)
 
         if resp.status == 200:
-            return self._fetch_blocked(code)
+            return self._fetch_200(code)
         elif resp.status == 301:
             location = resp.getheader("Location")
             if not location:
@@ -242,7 +239,7 @@ class Isgd(HTTPService):
         else:
             raise exceptions.ServiceException("Unknown HTTP status %i" % resp.status)
 
-    def _fetch_blocked(self, code):
+    def _fetch_200(self, code):
         resp = self._http_fetch(code, "GET")
         data = resp.read()
 
@@ -251,19 +248,29 @@ class Isgd(HTTPService):
         if not data:
             raise exceptions.CodeBlockedException("Empty response on status 200")
 
-        if self.RATE_LIMIT_STRING in data:
+        if "<div id=\"main\"><p>Rate limit exceeded - please wait 1 minute before accessing more shortened URLs</p></div>" in data:
             raise exceptions.BlockedException()
 
-        position = data.find(self.BLOCKED_STRING_START)
-        if position == -1:
-            raise exceptions.ServiceException("Unexpected response on status 200")
-        data = data[position + len(self.BLOCKED_STRING_START):]
+        if "<div id=\"disabled\"><h2>Link Disabled</h2>" in data:
+            return self._parse_blocked(code, data)
 
-        position = data.find(self.BLOCKED_STRING_END)
-        if position == -1:
-            raise exceptions.ServiceException("Unexpected response on status 200")
+        if "<p>The full original link is shown below. <b>Click the link</b> if you'd like to proceed to the destination shown:" in data:
+            return self._parse_preview(code, data)
 
-        url = data[:position].decode("utf-8")
+    def _parse_blocked(self, code, data):
+        match = re.search("<p>For reference and to help those fighting spam the original destination of this URL is given below \(we strongly recommend you don't visit it since it may damage your PC\): -<br />(.*)</p><h2>is\.gd</h2><p>is\.gd is a free service used to shorten long URLs\.", data)
+        if not match:
+            raise exceptions.ServiceException("Could not find target URL in 'Link Disabled' page")
+
+        url = match.group(1).decode("utf-8")
+        return HTMLParser.HTMLParser().unescape(url).encode("utf-8")
+
+    def _parse_preview(self, code, data):
+        match = re.search("<b>Click the link</b> if you'd like to proceed to the destination shown: -<br /><a href=\"(.*)\" class=\"biglink\">", data)
+        if not match:
+            raise exceptions.ServiceException("Could not find target URL in 'Preview' page")
+
+        url = match.group(1).decode("utf-8")
         return HTMLParser.HTMLParser().unescape(url).encode("utf-8")
 
 class Klam(SimpleService):
