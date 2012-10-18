@@ -158,7 +158,7 @@ class Bitly(HTTPService):
 
     @property
     def charset(self):
-        return "012356789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_"
+        return "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_"
 
     @property
     def url(self):
