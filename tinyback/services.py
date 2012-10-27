@@ -153,7 +153,10 @@ class SimpleService(HTTPService):
         elif resp.status in self.http_status_blocked:
             raise exceptions.BlockedException()
         else:
-            raise exceptions.ServiceException("Unknown HTTP status %i" % resp.status)
+            return self.unexpected_http_status(code, resp)
+
+    def unexpected_http_status(self, code, resp):
+        raise exceptions.ServiceException("Unexpected HTTP status %i" % resp.status)
 
 class Bitly(HTTPService):
     """
@@ -293,6 +296,22 @@ class Klam(SimpleService):
     @property
     def url(self):
         return "http://kl.am/"
+
+    def unexpected_http_status(self, code, resp):
+        if resp.status != 200:
+            return super(Klam, self).unexpected_http_status(code, resp)
+
+        resp, data = self._http_get(code)
+        if resp.status != 200:
+            raise exceptions.ServiceException("HTTP status changed from 200 to %i" % resp.status)
+
+        match = re.search("<p><strong><a href=\"(.*?)\" rel=\"nofollow\">", data)
+        if not match:
+            raise exceptions.ServiceException("Could not find target URL in 'suspicious' page")
+        url = match.group(1).decode("utf-8")
+
+        return HTMLParser.HTMLParser().unescape(url).encode("utf-8")
+
 
 class Owly(HTTPService):
     """
