@@ -84,13 +84,17 @@ class HTTPService(Service):
         else:
             self._conn = httplib.HTTPConnection(parsed_url.netloc, timeout=30)
 
-    def _http_fetch(self, code, method = "HEAD"):
+    def _http_head(self, code):
+        return self._http_fetch(code, "HEAD")[0]
+
+    def _http_get(self, code):
+        return self._http_fetch(code, "GET")
+
+    def _http_fetch(self, code, method):
         try:
             self._conn.request(method, self._path + code)
             resp = self._conn.getresponse()
-            if method == "HEAD":
-                resp.read()
-            return resp
+            return (resp, resp.read())
         except httplib.HTTPException, e:
             self._conn.close()
             raise exceptions.ServiceException("HTTP exception: %s" % e)
@@ -135,7 +139,7 @@ class SimpleService(HTTPService):
         return [403, 420, 429]
 
     def fetch(self, code):
-        resp = self._http_fetch(code)
+        resp = self._http_head(code)
 
         if resp.status in self.http_status_redirect:
             location = resp.getheader("Location")
@@ -165,7 +169,7 @@ class Bitly(HTTPService):
         return "http://bit.ly/"
 
     def fetch(self, code):
-        resp = self._http_fetch(code)
+        resp = self._http_head(code)
 
         if resp.status == 301:
             location = resp.getheader("Location")
@@ -210,7 +214,6 @@ class Isgd(HTTPService):
     http://is.gd/
     """
 
-
     @property
     def charset(self):
         return "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"
@@ -224,7 +227,7 @@ class Isgd(HTTPService):
         return "http://is.gd/"
 
     def fetch(self, code):
-        resp = self._http_fetch(code)
+        resp = self._http_head(code)
 
         if resp.status == 200:
             return self._fetch_200(code)
@@ -241,8 +244,7 @@ class Isgd(HTTPService):
             raise exceptions.ServiceException("Unknown HTTP status %i" % resp.status)
 
     def _fetch_200(self, code):
-        resp = self._http_fetch(code, "GET")
-        data = resp.read()
+        resp, data = self._http_get(code)
 
         if resp.status != 200:
             raise exceptions.ServiceException("HTTP status changed from 200 to %i on second request" % resp.status)
@@ -306,7 +308,7 @@ class Owly(HTTPService):
         return "http://ow.ly/"
 
     def fetch(self, code):
-        resp = self._http_fetch(code)
+        resp = self._http_head(code)
         if resp.status == 200:
             return self._fetch_blocked(code)
         elif resp.status == 301:
@@ -320,8 +322,7 @@ class Owly(HTTPService):
             raise exceptions.ServiceException("Unknown HTTP status %i" % resp.status)
 
     def _fetch_blocked(self, code):
-        resp = self._http_fetch(code, "GET")
-        data = resp.read()
+        resp, data = self._http_get(code)
 
         if resp.status != 200:
             raise exceptions.ServiceException("HTTP status changed from 200 to %i on second request" % resp.status)
@@ -348,7 +349,7 @@ class Tinyurl(HTTPService):
         return "http://tinyurl.com/"
 
     def fetch(self, code):
-        resp = self._http_fetch(code)
+        resp = self._http_head(code)
 
         if resp.status == 200:
             return self._fetch_200(code)
@@ -374,8 +375,7 @@ class Tinyurl(HTTPService):
         return resp.status
 
     def _fetch_200(self, code):
-        resp = self._http_fetch(code, "GET")
-        data = resp.read()
+        resp, data = self._http_get(code)
 
         if resp.status != 200:
             raise exceptions.ServiceException("HTTP status changed from 200 to %i on second request" % resp.status)
@@ -411,8 +411,7 @@ class Tinyurl(HTTPService):
         return HTMLParser.HTMLParser().unescape(url).encode("utf-8")
 
     def _preview(self, code):
-        resp = self._http_fetch("preview.php?num=" + code, "GET")
-        data = resp.read()
+        resp, data = self._http_get("preview.php?num=" + code)
 
         if resp.status != 200:
             raise exceptions.ServiceException("Unexpected HTTP status %i on preview page" % resp.status)
