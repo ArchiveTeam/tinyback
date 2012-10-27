@@ -209,10 +209,10 @@ class Bitly(HTTPService):
         if not ("url" in query and len(query["url"]) == 1) or not ("hash" in query and len(query["hash"]) == 1):
             raise exceptions.ServiceException("Unexpected Location header after HTTP status 302")
         if query["hash"][0] != code:
-            raise exceptions.ServiceException("Hash mismatch forr HTTP status 302")
+            raise exceptions.ServiceException("Hash mismatch for HTTP status 302")
         return query["url"][0]
 
-class Isgd(HTTPService):
+class Isgd(SimpleService):
     """
     http://is.gd/
     """
@@ -229,37 +229,27 @@ class Isgd(HTTPService):
     def url(self):
         return "http://is.gd/"
 
-    def fetch(self, code):
-        resp = self._http_head(code)
+    @property
+    def http_status_code_blocked(self):
+        """
+        HTTP status code that indicates the code/long URL was blocked
+        """
+        return [502]
 
-        if resp.status == 200:
-            return self._fetch_200(code)
-        elif resp.status == 301:
-            location = resp.getheader("Location")
-            if not location:
-                raise exceptions.ServiceException("No Location header after HTTP status 301")
-            return location
-        elif resp.status == 404:
-            raise exceptions.NoRedirectException()
-        elif resp.status == 502:
-            raise exceptions.CodeBlockedException("HTTP status 502")
-        else:
-            raise exceptions.ServiceException("Unknown HTTP status %i" % resp.status)
+    def unexpected_http_status(self, code, resp):
+        if resp.status != 200:
+            return super(Isgd, self).unexpected_http_status(code, resp)
 
-    def _fetch_200(self, code):
         resp, data = self._http_get(code)
-
         if resp.status != 200:
             raise exceptions.ServiceException("HTTP status changed from 200 to %i on second request" % resp.status)
+
         if not data:
             raise exceptions.CodeBlockedException("Empty response on status 200")
-
         if "<div id=\"main\"><p>Rate limit exceeded - please wait 1 minute before accessing more shortened URLs</p></div>" in data:
             raise exceptions.BlockedException()
-
         if "<div id=\"disabled\"><h2>Link Disabled</h2>" in data:
             return self._parse_blocked(code, data)
-
         if "<p>The full original link is shown below. <b>Click the link</b> if you'd like to proceed to the destination shown:" in data:
             return self._parse_preview(code, data)
 
@@ -313,7 +303,7 @@ class Klam(SimpleService):
         return HTMLParser.HTMLParser().unescape(url).encode("utf-8")
 
 
-class Owly(HTTPService):
+class Owly(SimpleService):
     """
     http://ow.ly/
     """
@@ -326,23 +316,11 @@ class Owly(HTTPService):
     def url(self):
         return "http://ow.ly/"
 
-    def fetch(self, code):
-        resp = self._http_head(code)
-        if resp.status == 200:
-            return self._fetch_blocked(code)
-        elif resp.status == 301:
-            location = resp.getheader("Location")
-            if not location:
-                raise exceptions.CodeBlockedException("No Location header after HTTP status 301")
-            return location
-        elif resp.status == 404:
-            raise exceptions.NoRedirectException()
-        else:
-            raise exceptions.ServiceException("Unknown HTTP status %i" % resp.status)
+    def unexpected_http_status(self, code, resp):
+        if resp.status != 200:
+            return super(Owly, self).unexpected_http_status(code, resp)
 
-    def _fetch_blocked(self, code):
         resp, data = self._http_get(code)
-
         if resp.status != 200:
             raise exceptions.ServiceException("HTTP status changed from 200 to %i on second request" % resp.status)
 
