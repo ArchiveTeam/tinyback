@@ -29,6 +29,8 @@ w|http://tinyurl.com/create.php?url=http://translate.google.com/translate?hl=en&
 sj27|http://www.tripadvisor.com/Hotel_Review-g147278-d240967-Reviews-Hotel_Kura_Hulanda-Willemstad_Curacao.html
 # HTML-escaped characters
 sinz|http://www.bananarepublic.com/browse/product/202/product_202834.htm?cs_catalog=BR_HOLIDAY1_2003&cs_category=201002
+# Preview URL is blank, probably due to encoding trouble
+0b26k|http://www.amazon.co.jp/gp/search/ref=sr_nr_i_0/503-6843802-6055928?ie=UTF8&keywords=アンリンシャス&rh=i%3Aaps%2Ck%3Aアンリンシャス%2Ci%3Ahpc&page=1
 
 ## Blocked
 # URL Terminated page

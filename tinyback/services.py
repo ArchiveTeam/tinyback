@@ -356,7 +356,7 @@ class Tinyurl(HTTPService):
                 raise exceptions.CodeBlockedException("No Location header after HTTP status 301")
             tiny = resp.getheader("X-tiny")
             if tiny and tiny[:3] == "aff":
-                return self._preview(code)
+                return self._preview(code, location)
             return location
         elif resp.status == 302:
             raise exceptions.CodeBlockedException()
@@ -407,7 +407,7 @@ class Tinyurl(HTTPService):
         url = match.group(1).decode("utf-8")
         return HTMLParser.HTMLParser().unescape(url).encode("utf-8")
 
-    def _preview(self, code):
+    def _preview(self, code, affiliate_url):
         resp, data = self._http_get("preview.php?num=" + code)
 
         if resp.status != 200:
@@ -418,6 +418,8 @@ class Tinyurl(HTTPService):
             raise exceptions.ServiceException("No redirect on preview page")
 
         url = match.group(1).decode("utf-8")
+        if url == "":
+            return affiliate_url
         return HTMLParser.HTMLParser().unescape(url).encode("utf-8")
 
 class Ur1ca(SimpleService):
