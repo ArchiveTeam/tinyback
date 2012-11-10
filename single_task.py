@@ -2,7 +2,6 @@
 
 # TinyBack - A tiny web scraper
 # Copyright (C) 2012 David Triendl
-# Copyright (C) 2012 Alard
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,23 +16,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from seesaw.externalprocess import *
-from seesaw.pipeline import *
-from seesaw.project import *
+import logging
+import sys
+import time
 
-if downloader:
-    username = downloader
-else:
-    username = "warrior"
+import tinyback
+import tinyback.tracker
 
-pipeline = Pipeline(
-    ExternalProcess("TinyBack", ["./single_task.py", username, "./data"])
-)
+username = tmp_dir = None
+for i, value in enumerate(sys.argv):
+    if i == 1:
+        username = value
+    elif i == 2:
+        tmp_dir = value
 
-project = Project(
-    title = "URLTeam",
-    project_html = """
-    <h2>URLTeam <span class="links"><a href="http://urlte.am/">Website</a></span></h2>
-    <p>The URLTeam is a project to preserve shorturls from various URL shorteners.</p>
-    """
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s: %(message)s")
+
+tracker = tinyback.tracker.Tracker("http://tracker.tinyarchive.org/v1/")
+task = tracker.fetch()
+if not task:
+    time.sleep(60)
+    sys.exit(0)
+
+reaper = tinyback.Reaper(task)
+fileobj = reaper.run(tmp_dir)
+tracker.put(task, fileobj, username)
+fileobj.close()
