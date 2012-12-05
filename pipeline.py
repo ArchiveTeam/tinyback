@@ -33,7 +33,6 @@ pipeline = Pipeline(
 project = Project(
     title = "URLTeam",
     project_html = """
-    <img class="project-logo" alt="URLTeam logo" src="http://archiveteam.org/images/9/9d/Urlteam-logo-reasonable-size.png" />
     <h2>URLTeam <span class="links"><a href="http://urlte.am/">Website</a> &middot; <a href="http://tracker.tinyarchive.orgv1/">Leaderboard</a></span></h2>
     <p>The URLTeam is a project to preserve shorturls from various URL shorteners.</p>
     """
