@@ -443,6 +443,27 @@ class Ur1ca(SimpleService):
     def http_status_no_redirect(self):
         return [200]
 
+class Snipurl(SimpleService):
+    """
+    http://snipurl.com
+    """
+
+    @property
+    def charset(self):
+        return "0123456789abcdefghijklmnopqrstuvwxyz-_"
+
+    @property
+    def rate_limit(self):
+        return None
+
+    @property
+    def url(self):
+        return "http://snipurl.com"
+
+    @property
+    def http_status_no_redirect(self):
+        return [410]
+
 def factory(name):
     if name == "bitly":
         return Bitly()
@@ -456,5 +477,7 @@ def factory(name):
         return Tinyurl()
     elif name == "ur1ca":
         return Ur1ca()
+    elif name == "snipurl":
+        return Snipurl()
     raise ValueError("Unknown service %s" % name)
 
