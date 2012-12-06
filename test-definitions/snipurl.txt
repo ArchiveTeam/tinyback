@@ -1,3 +1,10 @@
+## Standard tests
+# Random URLs
 baaa|http://www.ebuyer.com/customer/products/index.html?rb=3712779864&action=UFNQcm9kdWN0U2VhcmNoUmVzdWx0cw%3D%3D&cat_uid=33&mfr_uid=6
 snort_outrage|http://www.garynorth.com/public/2057.cfm
 4cb2a|http://traxad.com/r/bsem89_ytlf
+# Not found
+oycsuls|notfound
+
+## Password-protected pages
+25ssuzl|blocked

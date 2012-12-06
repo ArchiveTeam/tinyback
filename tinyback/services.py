@@ -464,6 +464,12 @@ class Snipurl(SimpleService):
     def http_status_no_redirect(self):
         return [410]
 
+    def fetch(self, code):
+        location = super(Snipurl, self).fetch(code)
+        if location == "/site/getprivate?snip=" + code:
+            raise exceptions.CodeBlockedException("Private key required")
+        return location
+
 def factory(name):
     if name == "bitly":
         return Bitly()
