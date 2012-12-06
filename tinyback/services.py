@@ -450,7 +450,7 @@ class Snipurl(SimpleService):
 
     @property
     def charset(self):
-        return "0123456789abcdefghijklmnopqrstuvwxyz-_"
+        return "0123456789abcdefghijklmnopqrstuvwxyz-_~"
 
     @property
     def rate_limit(self):
