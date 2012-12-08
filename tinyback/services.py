@@ -456,6 +456,29 @@ class Ur1ca(SimpleService):
     def http_status_no_redirect(self):
         return [200]
 
+class Snipurl(SimpleService):
+    """
+    http://snipurl.com
+    """
+
+    @property
+    def charset(self):
+        return "0123456789abcdefghijklmnopqrstuvwxyz-_~"
+
+    @property
+    def url(self):
+        return "http://snipurl.com"
+
+    @property
+    def http_status_no_redirect(self):
+        return [410]
+
+    def fetch(self, code):
+        location = super(Snipurl, self).fetch(code)
+        if location == "/site/getprivate?snip=" + code:
+            raise exceptions.CodeBlockedException("Private key required")
+        return location
+
 def factory(name):
     if name == "bitly":
         return Bitly()
@@ -469,5 +492,7 @@ def factory(name):
         return Tinyurl()
     elif name == "ur1ca":
         return Ur1ca()
+    elif name == "snipurl":
+        return Snipurl()
     raise ValueError("Unknown service %s" % name)
 
