@@ -453,10 +453,6 @@ class Snipurl(SimpleService):
         return "0123456789abcdefghijklmnopqrstuvwxyz-_~"
 
     @property
-    def rate_limit(self):
-        return None
-
-    @property
     def url(self):
         return "http://snipurl.com"
 
