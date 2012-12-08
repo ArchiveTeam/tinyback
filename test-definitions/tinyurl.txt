@@ -30,7 +30,9 @@ sj27|http://www.tripadvisor.com/Hotel_Review-g147278-d240967-Reviews-Hotel_Kura_
 # HTML-escaped characters
 sinz|http://www.bananarepublic.com/browse/product/202/product_202834.htm?cs_catalog=BR_HOLIDAY1_2003&cs_category=201002
 # Preview URL is blank, probably due to encoding trouble
-0b26k|http://www.amazon.co.jp/gp/search/ref=sr_nr_i_0/503-6843802-6055928?ie=UTF8&keywords=アンリンシャス&rh=i%3Aaps%2Ck%3Aアンリンシャス%2Ci%3Ahpc&page=1
+0b26k|http://www.amazon.co.jp/gp/search/ref=sr_nr_i_0/503-6843802-6055928?ie=UTF8&keywords=ﾂアﾂδ督δ環δ督シﾂδδス&rh=i%3Aaps%2Ck%3Aﾂアﾂδ督δ環δ督シﾂδδス%2Ci%3Ahpc&page=1
+# Preview URL is blank, but it is still advertising, so we have to parse the advertisement URL
+jr1ea|http://www.symantec.com/techsupp/asa/ss/sa/index.jsp?said=dsｭ&act=introｭ&sess=1795708580ｭ&docid=2004120709410739
 
 ## Blocked
 # URL Terminated page
