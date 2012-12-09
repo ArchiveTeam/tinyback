@@ -477,6 +477,7 @@ class Snipurl(SimpleService):
         location = super(Snipurl, self).fetch(code)
         if location == "/site/getprivate?snip=" + code:
             raise exceptions.CodeBlockedException("Private key required")
+        self._conn.close()
         return location
 
     def unexpected_http_status(self, code, resp):
