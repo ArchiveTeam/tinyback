@@ -479,6 +479,21 @@ class Snipurl(SimpleService):
             raise exceptions.CodeBlockedException("Private key required")
         return location
 
+    def unexpected_http_status(self, code, resp):
+        if resp.status != 500:
+            return super(Snipurl, self).unexpected_http_status(code, resp)
+
+        resp, data = self._http_get(code)
+        if resp.status != 500:
+            raise exceptions.ServiceException("HTTP status changed from 500 to %i on second request" % resp.status)
+
+        match = re.search("<p>You clicked on a snipped URL, which will take you to the following looong URL: </p> <div class=\"quote\"><span class=\"quotet\"></span><br/>(.*?)</div> <br />", data)
+        if not match:
+            raise exceptions.ServiceException("Could not find target URL on preview page")
+
+        url = match.group(1).decode("utf-8")
+        return HTMLParser.HTMLParser().unescape(url).encode("utf-8")
+
 def factory(name):
     if name == "bitly":
         return Bitly()
