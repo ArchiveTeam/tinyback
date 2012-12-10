@@ -424,16 +424,12 @@ class Tinyurl(HTTPService):
 
     def _scrub_url(self, code, url):
         parsed_url = urlparse.urlparse(url)
-
         if parsed_url.hostname == "redirect.tinyurl.com" and parsed_url.path == "/api/click":
             query = urlparse.parse_qs(parsed_url.query)
             if query["out"]:
                 return query["out"][0]
 
-        if "amazon" in parsed_url.hostname and not "tag=" in parsed_url.query:
-            return url
-
-        raise exceptions.ServiceException("Unable to scrub url: %s" % url)
+        return url
 
 class Ur1ca(SimpleService):
     """
