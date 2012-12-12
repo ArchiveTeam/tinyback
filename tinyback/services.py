@@ -59,6 +59,7 @@ class Service:
 
         Fetches the long URL for the given shortcode from the URL shortener and
         returns the URL or throws various exceptions when something went wrong.
+        The long URL is usually a bytestring.
         """
 
 class HTTPService(Service):
@@ -471,9 +472,12 @@ class Snipurl(SimpleService):
 
     def fetch(self, code):
         location = super(Snipurl, self).fetch(code)
-        if location == "/site/getprivate?snip=" + code:
-            raise exceptions.CodeBlockedException("Private key required")
         self._conn.close()
+        try:
+            if location.decode("ascii") == "/site/getprivate?snip=" + code:
+                raise exceptions.CodeBlockedException("Private key required")
+        except UnicodeDecodeError:
+            pass
         return location
 
     def unexpected_http_status(self, code, resp):
