@@ -470,8 +470,8 @@ class Snipurl(SimpleService):
         return [410]
 
     def fetch(self, code):
-        location = super(Snipurl, self).fetch(code).decode("utf-8")
-        if location == u"/site/getprivate?snip=" + code:
+        location = super(Snipurl, self).fetch(code)
+        if location == "/site/getprivate?snip=" + code:
             raise exceptions.CodeBlockedException("Private key required")
         self._conn.close()
         return location
