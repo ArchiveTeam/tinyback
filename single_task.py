@@ -24,15 +24,19 @@ import tinyback
 import tinyback.tracker
 
 username = tmp_dir = None
+tracker = "http://tracker.tinyarchive.org/v1/"
+
 for i, value in enumerate(sys.argv):
     if i == 1:
         username = value
     elif i == 2:
         tmp_dir = value
+    elif i == 3:
+        tracker = value
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s: %(message)s")
 
-tracker = tinyback.tracker.Tracker("http://tracker.tinyarchive.org/v1/")
+tracker = tinyback.tracker.Tracker(tracker)
 task = tracker.fetch()
 if not task:
     time.sleep(60)
