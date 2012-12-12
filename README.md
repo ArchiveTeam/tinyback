@@ -21,3 +21,4 @@ infrastructure.
 * [Owly](http://ow.ly/url/shorten-url)
 * [TinyURL](http://www.tinyurl.com/)
 * [Ur1ca](http://ur1.ca/)
+* [Snipurl](http://www.snipurl.com)
