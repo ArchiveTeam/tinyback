@@ -37,7 +37,10 @@ for i, value in enumerate(sys.argv):
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s: %(message)s")
 
 tracker = tinyback.tracker.Tracker(tracker)
-task = tracker.fetch()
+try:
+    task = tracker.fetch()
+except:
+    sys.exit(1)
 if not task:
     time.sleep(60)
     sys.exit(0)
