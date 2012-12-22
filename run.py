@@ -29,16 +29,15 @@ def parse_options():
     parser = optparse.OptionParser()
 
     parser.add_option("-t", "--tracker", dest="tracker",
+        default="http://tracker.tinyarchive.org/v1/",
         help="Connect to tracker at URL", metavar="URL")
     parser.add_option("-c", "--clear", dest="clear", action="store_true",
         help="Clear all pending tasks from tracker")
     parser.add_option("-n", "--num-threads", dest="num_threads", type="int",
         default=1, help="Use N threads", metavar="N")
-    parser.add_option("-s", "--sleep", dest="sleep", type="int", default=0,
-        help="Sleep for N seconds when idle (0 means to exit when idle)",
+    parser.add_option("-s", "--sleep", dest="sleep", type="int", default=60,
+        help="Sleep for N seconds when idle (default: 60 seconds)",
         metavar="N")
-    parser.add_option("-o", "--one-task", action="store_true", dest="one_task",
-        help="Only fetch a single task (per thread), then terminate")
     parser.add_option("--temp-dir", dest="temp_dir",
         help="Set directory for temporary files to DIR", metavar="DIR")
     parser.add_option("-u", "--username", dest="username",
@@ -49,30 +48,33 @@ def parse_options():
     options, args = parser.parse_args()
     if args:
         parser.error("Unexpected argument %s" % args[0])
-    if not options.tracker:
-        parser.error("Missing required option --tracker")
 
     return options
 
 def run_thread(options, tracker):
+    log = logging.getLogger("run_thread")
     while True:
         try:
             task = tracker.fetch()
         except:
-            task = None
+            log.info("Error contacting tracker - Sleeping for 60 seconds")
+            time.sleep(60)
+            continue
 
         if not task:
-            if options.sleep <= 0:
-                return
+            log.debug("Sleeping for %i seconds" % seconds)
             time.sleep(options.sleep)
         else:
             reaper = tinyback.Reaper(task)
             fileobj = reaper.run(options.temp_dir)
-            tracker.put(task, fileobj, options.username)
-            fileobj.close()
-
-        if options.one_task:
-            return
+            try:
+                tracker.put(task, fileobj, options.username)
+            except:
+                time.sleep(60)
+                log.info("Error contacting tracker - Sleeping for 60 seconds")
+                continue
+            finally:
+                fileobj.close()
 
 def main():
     options = parse_options()
