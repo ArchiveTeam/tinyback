@@ -62,7 +62,7 @@ def run_thread(options, tracker):
             continue
 
         if not task:
-            log.debug("Sleeping for %i seconds" % seconds)
+            log.debug("Sleeping for %i seconds" % options.sleep)
             time.sleep(options.sleep)
         else:
             reaper = tinyback.Reaper(task)
