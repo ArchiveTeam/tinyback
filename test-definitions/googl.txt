@@ -1,0 +1,7 @@
+## Standard tests
+# example.org test
+T84j|http://example.org/
+# Not found
+oycsuls|notfound
+# Removed
+abcd|blocked

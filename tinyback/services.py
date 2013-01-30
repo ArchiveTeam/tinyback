@@ -18,6 +18,7 @@
 import abc
 import HTMLParser
 import httplib
+import json
 import platform
 import re
 import socket
@@ -495,6 +496,64 @@ class Snipurl(SimpleService):
         url = match.group(1).decode("utf-8")
         return HTMLParser.HTMLParser().unescape(url).encode("utf-8")
 
+class Googl(Service):
+    """
+    http://goo.gl/
+    """
+
+    @property
+    def rate_limit(self):
+        return (1, 5)
+
+    @property
+    def charset(self):
+        return "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+    def __init__(self):
+        host = "www.googleapis.com"
+
+        version = platform.python_version_tuple()
+        if int(version[0]) == 2 and int(version[1]) <= 5:
+            self._conn = httplib.HTTPSConnection(host)
+        else:
+            self._conn = httplib.HTTPSConnection(host, timeout=30)
+
+    def fetch(self, code):
+        try:
+            self._conn.request("GET", "/urlshortener/v1/url?shortUrl=http://goo.gl/%s" % code)
+            resp = self._conn.getresponse()
+            data = resp.read()
+        except httplib.HTTPException, e:
+            self._conn.close()
+            raise exceptions.ServiceException("HTTP exception: %s" % e)
+        except socket.error, e:
+            self._conn.close()
+            raise exceptions.ServiceException("Socket error: %s" % e)
+
+        if resp.status == 200:
+            return self._parse_json(data)
+        elif resp.status == 403:
+            raise exceptions.BlockedException()
+        elif resp.status == 404:
+            raise exceptions.NoRedirectException()
+        else:
+            raise exceptions.ServiceException("Unexpected HTTP status %i" % resp.status)
+
+    def _parse_json(self, data):
+        try:
+            data = json.loads(data)
+        except ValueError:
+            raise exceptions.ServiceException("Could not decode response")
+
+        if not "kind" in data or data["kind"] != "urlshortener#url":
+            raise exceptions.ServiceException("No/bad type given")
+        if not "status" in data:
+            raise exceptions.ServiceException("No status given")
+        if not "longUrl" in data:
+            raise exceptions.CodeBlockedException("Status: %s" % data["status"])
+        return data["longUrl"]
+
+
 def factory(name):
     if name == "bitly":
         return Bitly()
@@ -510,5 +569,7 @@ def factory(name):
         return Ur1ca()
     elif name == "snipurl":
         return Snipurl()
+    elif name == "googl":
+        return Googl()
     raise ValueError("Unknown service %s" % name)
 
