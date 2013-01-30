@@ -271,39 +271,6 @@ class Isgd(SimpleService):
         url = match.group(1).decode("utf-8")
         return HTMLParser.HTMLParser().unescape(url).encode("utf-8")
 
-class Klam(SimpleService):
-    """
-    http://kl.am/
-    """
-
-    @property
-    def charset(self):
-        """
-        Klam charset
-
-        This is just a guess since the service does not allow creation of new URLs.
-        """
-        return "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-
-    @property
-    def url(self):
-        return "http://kl.am/"
-
-    def unexpected_http_status(self, code, resp):
-        if resp.status != 200:
-            return super(Klam, self).unexpected_http_status(code, resp)
-
-        resp, data = self._http_get(code)
-        if resp.status != 200:
-            raise exceptions.ServiceException("HTTP status changed from 200 to %i" % resp.status)
-
-        match = re.search("<p><strong><a href=\"(.*?)\" rel=\"nofollow\">", data)
-        if not match:
-            raise exceptions.ServiceException("Could not find target URL in 'suspicious' page")
-        url = match.group(1).decode("utf-8")
-
-        return HTMLParser.HTMLParser().unescape(url).encode("utf-8")
-
 
 class Owly(SimpleService):
     """
@@ -559,8 +526,6 @@ def factory(name):
         return Bitly()
     elif name == "isgd":
         return Isgd()
-    elif name == "klam":
-        return Klam()
     elif name == "owly":
         return Owly()
     elif name == "tinyurl":

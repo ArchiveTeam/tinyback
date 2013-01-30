@@ -1,7 +1,0 @@
-## Standard tests
-# Random website
-a|http://thepioneerwoman.com/2009/03/on_my_porch_right_now.html
-# Not found
-helvete|notfound
-# Suspicious
-KRB|http://you-got-rick-rolled.com
