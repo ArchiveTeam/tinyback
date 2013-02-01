@@ -520,6 +520,43 @@ class Googl(Service):
             raise exceptions.CodeBlockedException("Status: %s" % data["status"])
         return data["longUrl"]
 
+class Trimnew(SimpleService):
+    """
+    http://tr.im/
+    """
+
+    @property
+    def charset(self):
+        return "0123456789abcdefghijklmnopqrstuvwxyz"
+
+    @property
+    def url(self):
+        return "http://tr.im/"
+
+    @property
+    def http_status_redirect(self):
+        return [301]
+
+    @property
+    def http_status_no_redirect(self):
+        return []
+
+    @property
+    def http_status_code_blocked(self):
+        return []
+
+    @property
+    def http_status_blocked(self):
+        return [404]
+
+    def fetch(self, code):
+        if code == "500":
+            raise exceptions.CodeBlockedException()
+
+        url = super(Trimnew, self).fetch(code)
+        if url == "http://tr.im/404":
+            raise exceptions.NoRedirectException()
+        return url
 
 def factory(name):
     if name == "bitly":
@@ -536,5 +573,7 @@ def factory(name):
         return Snipurl()
     elif name == "googl":
         return Googl()
+    elif name == "trimnew":
+        return Trimnew()
     raise ValueError("Unknown service %s" % name)
 

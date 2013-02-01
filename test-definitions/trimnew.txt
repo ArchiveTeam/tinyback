@@ -1,0 +1,9 @@
+## Standard tests
+# example.org test
+jw|http://example.org/
+# Not found
+i|notfound
+
+## tr.im specific
+# 500 is the default Heroku error page
+500|blocked
