@@ -15,10 +15,12 @@ Warrior](http://www.archiveteam.org/index.php?title=ArchiveTeam_Warrior)
 infrastructure.
 
 # Supported URL shorteners
-* [Bitly](http://www.bitly.com/)
+* [Bitly](https://www.bitly.com/)
+* [Googl](https://goo.gl/)
 * [Isgd](http://www.is.gd/)
 * [Klam](http://kl.am/)
 * [Owly](http://ow.ly/url/shorten-url)
-* [TinyURL](http://www.tinyurl.com/)
+* [Tinyurl](http://www.tinyurl.com/)
+* [Trimnew](http://tr.im/)
 * [Ur1ca](http://ur1.ca/)
 * [Snipurl](http://www.snipurl.com)
