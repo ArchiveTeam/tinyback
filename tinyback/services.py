@@ -558,6 +558,24 @@ class Trimnew(SimpleService):
             raise exceptions.NoRedirectException()
         return url
 
+class Postly(SimpleService):
+
+    @property
+    def charset(self):
+        return "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+    @property
+    def url(self):
+        return "http://post.ly/"
+
+    @property
+    def http_status_redirect(self):
+        return [301]
+
+    @property
+    def http_status_no_redirect(self):
+        return [302]
+
 def factory(name):
     if name == "bitly":
         return Bitly()
@@ -575,5 +593,7 @@ def factory(name):
         return Googl()
     elif name == "trimnew":
         return Trimnew()
+    elif name == "postly":
+        return Postly()
     raise ValueError("Unknown service %s" % name)
 
