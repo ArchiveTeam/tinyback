@@ -35,8 +35,8 @@ def parse_options():
         help="Clear all pending tasks from tracker")
     parser.add_option("-n", "--num-threads", dest="num_threads", type="int",
         default=1, help="Use N threads", metavar="N")
-    parser.add_option("-s", "--sleep", dest="sleep", type="int", default=60,
-        help="Sleep for N seconds when idle (default: 60 seconds)",
+    parser.add_option("-s", "--sleep", dest="sleep", type="int", default=300,
+        help="Sleep for N seconds when idle (default: 5 minutes)",
         metavar="N")
     parser.add_option("--temp-dir", dest="temp_dir",
         help="Set directory for temporary files to DIR", metavar="DIR")

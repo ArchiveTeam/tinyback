@@ -42,7 +42,7 @@ try:
 except:
     sys.exit(1)
 if not task:
-    time.sleep(60)
+    time.sleep(300)
     sys.exit(0)
 
 reaper = tinyback.Reaper(task)
