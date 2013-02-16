@@ -576,6 +576,17 @@ class Postly(SimpleService):
     def http_status_no_redirect(self):
         return [302]
 
+class Wpme(SimpleService):
+    """ Wordpress.com's shortener wp.me. """
+
+    @property
+    def charset(self):
+        return "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_"
+
+    @property
+    def url(self):
+        return "http://wp.me/"
+
 def factory(name):
     if name == "bitly":
         return Bitly()
@@ -595,5 +606,7 @@ def factory(name):
         return Trimnew()
     elif name == "postly":
         return Postly()
+    elif name == "wpme"
+        return Wpme()
     raise ValueError("Unknown service %s" % name)
 
