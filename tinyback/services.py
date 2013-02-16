@@ -606,7 +606,7 @@ def factory(name):
         return Trimnew()
     elif name == "postly":
         return Postly()
-    elif name == "wpme"
+    elif name == "wpme":
         return Wpme()
     raise ValueError("Unknown service %s" % name)
 
