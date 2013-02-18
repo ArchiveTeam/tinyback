@@ -572,6 +572,10 @@ class Postly(SimpleService):
         return "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
     @property
+    def rate_limit(self):
+        return None
+
+    @property
     def url(self):
         return "https://post.ly/"
 
@@ -589,10 +593,6 @@ class Wpme(SimpleService):
     @property
     def charset(self):
         return "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_"
-
-    @property
-    def ratelimit(self):
-        return None
 
     @property
     def url(self):
