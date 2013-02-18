@@ -80,11 +80,18 @@ class HTTPService(Service):
         parsed_url = urlparse.urlparse(self.url)
         self._path = parsed_url.path or "/"
 
+        if parsed_url.scheme == "http":
+            klass = httplib.HTTPConnection
+        elif parsed_url.scheme == "https":
+            klass = httplib.HTTPSConnection
+        else:
+            raise ValueError("Unknown scheme %s" % parsed_url.scheme)
+
         version = platform.python_version_tuple()
         if int(version[0]) == 2 and int(version[1]) <= 5:
-            self._conn = httplib.HTTPConnection(parsed_url.netloc)
+            self._conn = klass(parsed_url.netloc)
         else:
-            self._conn = httplib.HTTPConnection(parsed_url.netloc, timeout=30)
+            self._conn = klass(parsed_url.netloc, timeout=30)
 
     def _http_head(self, code):
         return self._http_fetch(code, "HEAD")[0]
@@ -566,7 +573,7 @@ class Postly(SimpleService):
 
     @property
     def url(self):
-        return "http://post.ly/"
+        return "https://post.ly/"
 
     @property
     def http_status_redirect(self):
@@ -582,6 +589,10 @@ class Wpme(SimpleService):
     @property
     def charset(self):
         return "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_"
+
+    @property
+    def ratelimit(self):
+        return None
 
     @property
     def url(self):
