@@ -93,6 +93,7 @@ def main():
 
         for i in range(options.num_threads):
             thread = threading.Thread(target=run_thread,args=(options, tracker))
+            time.sleep(1)
             thread.start()
             threads.append(thread)
 
