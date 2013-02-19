@@ -268,7 +268,10 @@ class Isgd(SimpleService):
             raise exceptions.ServiceException("Could not find target URL in 'Link Disabled' page")
 
         url = match.group(1).decode("utf-8")
-        return HTMLParser.HTMLParser().unescape(url).encode("utf-8")
+        url = HTMLParser.HTMLParser().unescape(url).encode("utf-8")
+        if url == "":
+            raise exceptions.CodeBlockedException("Empty URL on preview")
+        return url
 
     def _parse_preview(self, code, data):
         match = re.search("<b>Click the link</b> if you'd like to proceed to the destination shown: -<br /><a href=\"(.*)\" class=\"biglink\">", data)

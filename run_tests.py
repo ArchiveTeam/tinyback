@@ -30,5 +30,7 @@ for filename in os.listdir(tests_path):
     if not match:
         continue
     name = match.group(1)
+    if name != "isgd":
+        continue
     fixtures = os.path.join(tests_path, filename)
     tinyback.ServiceTester(name, fixtures).run()
