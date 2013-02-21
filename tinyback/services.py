@@ -281,6 +281,13 @@ class Isgd(SimpleService):
         url = match.group(1).decode("utf-8")
         return HTMLParser.HTMLParser().unescape(url).encode("utf-8")
 
+class Vgd(Isgd):
+    """
+    http://v.gd/ - sibling of is.gd
+    """
+    @property
+    def url(self):
+        return "http://v.gd/"
 
 class Owly(SimpleService):
     """
@@ -622,5 +629,7 @@ def factory(name):
         return Postly()
     elif name == "wpme":
         return Wpme()
+    elif name == "vgd":
+        return Vgd()
     raise ValueError("Unknown service %s" % name)
 
