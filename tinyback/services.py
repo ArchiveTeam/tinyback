@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import abc
+import errno
 import HTMLParser
 import httplib
 import json
@@ -589,6 +590,20 @@ class Postly(SimpleService):
     @property
     def http_status_no_redirect(self):
         return [302]
+
+    def _http_fetch(self, code, method):
+        try:
+            self._conn.request(method, self._path + code)
+            resp = self._conn.getresponse()
+            return (resp, resp.read())
+        except httplib.HTTPException, e:
+            self._conn.close()
+            raise exceptions.ServiceException("HTTP exception: %s" % e)
+        except socket.error, e:
+            self._conn.close()
+            if e[0] == errno.ETIMEDOUT:
+                raise exceptions.BlockedException("Socket error: %s" % e)
+            raise exceptions.ServiceException("Socket error: %s" % e)
 
 class Wpme(SimpleService):
     """ Wordpress.com's shortener wp.me. """
