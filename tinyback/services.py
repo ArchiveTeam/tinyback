@@ -24,7 +24,9 @@ import platform
 import re
 import socket
 import urlparse
+import platform
 
+import tinyback
 from tinyback import exceptions
 
 class Service:
@@ -611,6 +613,9 @@ class Postly(SimpleService):
         return [302]
 
     def _http_fetch(self, code, method):
+        headers = {
+            "User-Agent": "Tinyback v%s (%s v%s) ArchiveTeam" % (tinyback.__version__, platform.python_implementation(), platform.python_version())
+        }
         try:
             self._conn.request(method, self._path + code)
             resp = self._conn.getresponse()
