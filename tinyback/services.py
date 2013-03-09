@@ -77,6 +77,14 @@ class HTTPService(Service):
         Returns the base URL of the URL shortener
         """
 
+    @property
+    def http_keepalive(self):
+        """
+        Whether to use HTTP persistent connections or not. If set to false, the
+        connection will be forcibly closed after each request
+        """
+        return True
+
     def __init__(self):
         parsed_url = urlparse.urlparse(self.url)
         self._path = parsed_url.path or "/"
@@ -101,10 +109,18 @@ class HTTPService(Service):
         return self._http_fetch(code, "GET")
 
     def _http_fetch(self, code, method):
+        if self.http_keepalive:
+            headers = {"Connection": "Keep-Alive"}
+        else:
+            headers = {"Connection": "close"}
+
         try:
-            self._conn.request(method, self._path + code)
+            self._conn.request(method, self._path + code, headers=headers)
             resp = self._conn.getresponse()
-            return (resp, resp.read())
+            result = (resp, resp.read())
+            if not self.http_keepalive:
+                self._conn.close()
+            return result
         except httplib.HTTPException, e:
             self._conn.close()
             raise exceptions.ServiceException("HTTP exception: %s" % e)
@@ -449,9 +465,12 @@ class Snipurl(SimpleService):
     def http_status_no_redirect(self):
         return [410]
 
+    @property
+    def http_keepalive(self):
+        return False
+
     def fetch(self, code):
         location = super(Snipurl, self).fetch(code)
-        self._conn.close()
         try:
             if location.decode("ascii") == "/site/getprivate?snip=" + code:
                 raise exceptions.CodeBlockedException("Private key required")
