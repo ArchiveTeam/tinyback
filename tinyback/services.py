@@ -80,6 +80,13 @@ class HTTPService(Service):
         """
 
     @property
+    def http_headers(self):
+        """
+        Dictionary of additional HTTP headers to send with every request.
+        """
+        return {}
+
+    @property
     def http_keepalive(self):
         """
         Whether to use HTTP persistent connections or not. If set to false, the
@@ -111,10 +118,11 @@ class HTTPService(Service):
         return self._http_fetch(code, "GET")
 
     def _http_fetch(self, code, method):
+        headers = self.http_headers
         if self.http_keepalive:
-            headers = {"Connection": "Keep-Alive"}
+            headers["Connection"] = "Keep-Alive"
         else:
-            headers = {"Connection": "close"}
+            headers["Connection"] = "close"
 
         try:
             self._conn.request(method, self._path + code, headers=headers)
@@ -597,12 +605,8 @@ class Postly(SimpleService):
         return "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
     @property
-    def rate_limit(self):
-        return None
-
-    @property
     def url(self):
-        return "https://post.ly/"
+        return "http://post.ly/"
 
     @property
     def http_status_redirect(self):
@@ -612,22 +616,9 @@ class Postly(SimpleService):
     def http_status_no_redirect(self):
         return [302]
 
-    def _http_fetch(self, code, method):
-        headers = {
-            "User-Agent": "Tinyback v%s (%s v%s) ArchiveTeam" % (tinyback.__version__, platform.python_implementation(), platform.python_version())
-        }
-        try:
-            self._conn.request(method, self._path + code)
-            resp = self._conn.getresponse()
-            return (resp, resp.read())
-        except httplib.HTTPException, e:
-            self._conn.close()
-            raise exceptions.ServiceException("HTTP exception: %s" % e)
-        except socket.error, e:
-            self._conn.close()
-            if e[0] == errno.ETIMEDOUT:
-                raise exceptions.BlockedException("Socket error: %s" % e)
-            raise exceptions.ServiceException("Socket error: %s" % e)
+    @property
+    def http_headers(self):
+        return {"User-Agent": "Tinyback v%s (%s v%s) ArchiveTeam" % (tinyback.__version__, platform.python_implementation(), platform.python_version())}
 
 class Wpme(SimpleService):
     """ Wordpress.com's shortener wp.me. """
