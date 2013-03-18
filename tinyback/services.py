@@ -734,6 +734,16 @@ class Vbly(YourlsService):
     def yourls_url_convert(self):
         return 32
 
+class Arsehat(YourlsService):
+
+    @property
+    def yourls_api_url(self):
+        return "http://arseh.at/api.php"
+
+    @property
+    def yourls_url_convert(self):
+        return 32
+
 def factory(name):
     if name == "bitly":
         return Bitly()
@@ -757,5 +767,7 @@ def factory(name):
         return Wpme()
     elif name == "vbly":
         return Vbly()
+    elif name == "arsehat":
+        return Arsehat()
     raise ValueError("Unknown service %s" % name)
 

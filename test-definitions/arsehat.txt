@@ -1,0 +1,7 @@
+## Standard tests
+# example.org test
+4fff|http://www.example.org/
+# Not found
+oycsuls|notfound
+# Custom shortcode
+examplecom|http://www.example.com/
