@@ -724,6 +724,16 @@ class Wpme(SimpleService):
     def url(self):
         return "http://wp.me/"
 
+class Vbly(YourlsService):
+
+    @property
+    def yourls_api_url(self):
+        return "http://vbly.us/yourls-api.php"
+
+    @property
+    def yourls_url_convert(self):
+        return 32
+
 def factory(name):
     if name == "bitly":
         return Bitly()
@@ -745,5 +755,7 @@ def factory(name):
         return Postly()
     elif name == "wpme":
         return Wpme()
+    elif name == "vbly":
+        return Vbly()
     raise ValueError("Unknown service %s" % name)
 
