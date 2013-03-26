@@ -1,0 +1,7 @@
+9c199a|http://www.artdaily.org/index.asp?int_sec=11&int_new=42539&asid=524f3f9a
+
+# This one uses iframe with a personal sharedby bar
+c0ffee|http://rss.cnn.com/~r/rss/cnn_topstories/~3/HBWaEGnJLnQ/index.html?asid=59bb4e54
+
+# Not Found
+000001|notfound
