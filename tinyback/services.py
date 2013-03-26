@@ -22,6 +22,7 @@ import json
 import platform
 import re
 import socket
+import urllib
 import urlparse
 
 import tinyback
@@ -191,6 +192,98 @@ class SimpleService(HTTPService):
 
     def unexpected_http_status(self, code, resp):
         raise exceptions.ServiceException("Unexpected HTTP status %i" % resp.status)
+
+class YourlsService(Service):
+    """
+    A service for installations of Yourls (http://yourls.org).
+    """
+
+    @abc.abstractproperty
+    def yourls_api_url(self):
+        """
+        The endpoint of the Yourls API.
+
+        The Yourls API is typically located at /yourls-api.php
+        """
+
+    @abc.abstractproperty
+    def yourls_url_convert(self):
+        """
+        The value of the YOURLS_URL_CONVERT parameter.
+
+        The YOUR_SULR_CONVERT parameter specifies what charset is used by the
+        Yourls installation.
+        """
+
+    @property
+    def charset(self):
+        if self.yourls_url_convert == 36:
+            return "0123456789abcdefghijklmnopqrstuvwxyz"
+        elif self.yourls_url_convert == 62:
+            return "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        raise RuntimeError("Bad value for yourls_url_convert parameter")
+
+    def __init__(self):
+        parsed_url = urlparse.urlparse(self.yourls_api_url)
+        self._path = parsed_url.path or "/"
+
+        if parsed_url.scheme == "http":
+            klass = httplib.HTTPConnection
+        elif parsed_url.scheme == "https":
+            klass = httplib.HTTPSConnection
+        else:
+            raise ValueError("Unknown scheme %s" % parsed_url.scheme)
+
+        version = platform.python_version_tuple()
+        if int(version[0]) == 2 and int(version[1]) <= 5:
+            self._conn = klass(parsed_url.netloc)
+        else:
+            self._conn = klass(parsed_url.netloc, timeout=30)
+
+    def fetch(self, code):
+        params = {"action": "expand", "shorturl": code, "format": "json"}
+        try:
+            self._conn.request("GET", self._path + "?" + urllib.urlencode(params))
+            resp = self._conn.getresponse()
+            data = resp.read()
+        except httplib.HTTPException, e:
+            self._conn.close()
+            raise exceptions.ServiceException("HTTP exception: %s" % e)
+        except socket.error, e:
+            self._conn.close()
+            raise exceptions.ServiceException("Socket error: %s" % e)
+
+        if resp.status == 200:
+            return self._parse_json(data, code)
+        raise exceptions.ServiceException("Unexpected HTTP status %i" % resp.status)
+
+    def _parse_json(self, data, code):
+        try:
+            data = json.loads(data)
+        except ValueError:
+            raise exceptions.ServiceException("Could not decode response")
+
+        if not "keyword" in data:
+            raise exceptions.ServiceException("Keyword is missing from response")
+        elif data["keyword"] != code:
+            raise exceptions.ServiceException("Keyword does not match code")
+
+        if "errorCode" in data:
+            if data["errorCode"] == 404:
+                raise exceptions.NoRedirectException()
+            else:
+                raise exceptions.ServiceException("Unexpected error code: %s" % str(data["errorCode"]))
+
+        if "statusCode" in data:
+            if data["statusCode"] == 200:
+                if not "longurl" in data:
+                    raise exceptions.ServiceException("Status code 200 but no URL")
+                else:
+                    return data["longurl"]
+            else:
+                raise exceptions.ServiceException("Unexpected status code: %s" % str(data["statusCode"]))
+
+        raise exceptions.ServiceException("Neither status nor error code found in response")
 
 class Bitly(HTTPService):
     """
@@ -692,6 +785,28 @@ class Visibli(BaseVisibliService):
         return "http://sharedby.co/"
 
 
+class Vbly(YourlsService):
+
+    @property
+    def yourls_api_url(self):
+        return "http://vbly.us/yourls-api.php"
+
+    @property
+    def yourls_url_convert(self):
+        return 32
+
+
+class Arsehat(YourlsService):
+
+    @property
+    def yourls_api_url(self):
+        return "http://arseh.at/api.php"
+
+    @property
+    def yourls_url_convert(self):
+        return 32
+
+
 _factory_map = {
     "bitly": Bitly,
     "isgd": Isgd,
@@ -705,6 +820,8 @@ _factory_map = {
     "wpme": Wpme,
     "visiblihex": VisibliHex,
     "visibli": Visibli,
+    "vbly": Vbly,
+    "arsehat": Arsehat
 }
 
 
@@ -714,4 +831,3 @@ def factory(name):
         raise ValueError("Unknown service %s" % name)
     else:
         return service()
-
