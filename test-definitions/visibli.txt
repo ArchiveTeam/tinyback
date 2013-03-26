@@ -1,0 +1,7 @@
+pa3qKX|http://www.nytimes.com/schoolbook/2012/04/13/why-are-charter-schools-exempt-from-bullying-law/?partner=rss&emc=rss
+
+# This one uses iframe with a personal sharedby bar
+AHbpFG|http://family.fourseasons.com/2011/08/mom-sis-me-and-the-kids/
+
+# Not Found
+abc123|notfound

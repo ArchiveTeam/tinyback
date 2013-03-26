@@ -15,16 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import abc
-import errno
 import HTMLParser
+import abc
 import httplib
 import json
 import platform
 import re
 import socket
 import urlparse
-import platform
 
 import tinyback
 from tinyback import exceptions
@@ -34,7 +32,7 @@ class Service:
     URL shortener client
     """
 
-    __metaclass__= abc.ABCMeta
+    __metaclass__ = abc.ABCMeta
 
     @abc.abstractproperty
     def charset(self):
@@ -214,7 +212,7 @@ class Bitly(HTTPService):
             location = resp.getheader("Location")
             if not location:
                 raise exceptions.ServiceException("No Location header after HTTP status 301")
-            if resp.reason == "Moved": # Normal bit.ly redirect
+            if resp.reason == "Moved":  # Normal bit.ly redirect
                 return location
             elif resp.reason == "Moved Permanently":
                 # Weird "bundles" redirect, forces connection close despite
@@ -631,26 +629,106 @@ class Wpme(SimpleService):
     def url(self):
         return "http://wp.me/"
 
+
+class BaseVisibliService(SimpleService):
+    @property
+    def http_status_redirect(self):
+        return [301]
+
+    @property
+    def http_status_no_redirect(self):
+        return [302]
+
+    def fetch(self, code):
+        resp = self._http_head(code)
+
+        if resp.status == 200:
+            return self._fetch_200(code)
+        elif resp.status in self.http_status_redirect:
+            location = resp.getheader("Location")
+            if not location:
+                raise exceptions.ServiceException("No Location header after HTTP status 301")
+            return location
+        elif resp.status in self.http_status_no_redirect:
+            raise exceptions.NoRedirectException()
+        elif resp.status in self.http_status_code_blocked:
+            raise exceptions.CodeBlockedException()
+        elif resp.status in self.http_status_blocked:
+            raise exceptions.BlockedException()
+        else:
+            return self.unexpected_http_status(code, resp)
+
+    def _fetch_200(self, code):
+        resp, data = self._http_get(code)
+
+        if resp.status != 200:
+            return self.unexpected_http_status(code, resp)
+
+        match = re.search(r'<iframe id="iframe" src="([^"]+)">', data)
+        if not match:
+            raise exceptions.ServiceException("No iframe url found")
+
+        url = match.group(1).decode("utf-8")
+        url = HTMLParser.HTMLParser().unescape(url).encode("utf-8")
+        return url
+
+
+class VisibliHex(BaseVisibliService):
+    """Visibli's old share shortener
+
+    It uses urls like http://links.visibli.com/links/fbc5fa
+    """
+
+    @property
+    def charset(self):
+        return "0123456789abcdef"
+
+    @property
+    def url(self):
+        return "http://links.sharedby.co/links/"
+
+
+class Visibli(BaseVisibliService):
+    """Visibli's (now SharedBy) new shortener
+
+    It uses urls like:
+
+    * http://links.visibli.com/share/AHbpFG
+    * http://vsb.li/AHbpFG
+    * http://links.sharedby.co/share/AHbpFG
+    * http://sharedby.co/AHbpFG
+    * http://archive_team_and_urlteam_is_the_best.sharedby.co/AHbpFG
+    """
+
+    @property
+    def charset(self):
+        return "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+    @property
+    def url(self):
+        return "http://sharedby.co/"
+
+
+_factory_map = {
+    "bitly": Bitly,
+    "isgd": Isgd,
+    "owly": Owly,
+    "tinyurl": Tinyurl,
+    "ur1ca": Ur1ca,
+    "snipurl": Snipurl,
+    "googl": Googl,
+    "trimnew": Trimnew,
+    "postly": Postly,
+    "wpme": Wpme,
+    "visiblihex": VisibliHex,
+    "visibli": Visibli,
+}
+
+
 def factory(name):
-    if name == "bitly":
-        return Bitly()
-    elif name == "isgd":
-        return Isgd()
-    elif name == "owly":
-        return Owly()
-    elif name == "tinyurl":
-        return Tinyurl()
-    elif name == "ur1ca":
-        return Ur1ca()
-    elif name == "snipurl":
-        return Snipurl()
-    elif name == "googl":
-        return Googl()
-    elif name == "trimnew":
-        return Trimnew()
-    elif name == "postly":
-        return Postly()
-    elif name == "wpme":
-        return Wpme()
-    raise ValueError("Unknown service %s" % name)
+    service = _factory_map.get(name)
+    if not service:
+        raise ValueError("Unknown service %s" % name)
+    else:
+        return service()
 
