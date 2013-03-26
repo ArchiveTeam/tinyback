@@ -639,30 +639,13 @@ class BaseVisibliService(SimpleService):
     def http_status_no_redirect(self):
         return [302]
 
-    def fetch(self, code):
-        resp = self._http_head(code)
-
-        if resp.status == 200:
-            return self._fetch_200(code)
-        elif resp.status in self.http_status_redirect:
-            location = resp.getheader("Location")
-            if not location:
-                raise exceptions.ServiceException("No Location header after HTTP status 301")
-            return location
-        elif resp.status in self.http_status_no_redirect:
-            raise exceptions.NoRedirectException()
-        elif resp.status in self.http_status_code_blocked:
-            raise exceptions.CodeBlockedException()
-        elif resp.status in self.http_status_blocked:
-            raise exceptions.BlockedException()
-        else:
-            return self.unexpected_http_status(code, resp)
-
-    def _fetch_200(self, code):
-        resp, data = self._http_get(code)
-
+    def unexpected_http_status(self, code, resp):
         if resp.status != 200:
-            return self.unexpected_http_status(code, resp)
+            return super(BaseVisbliService, self).unexpected_http_status(code, resp)
+
+        resp, data = self._http_get(code)
+        if resp.status != 200:
+            raise exceptions.ServiceException("HTTP status changed from 200 to %i on second request" % resp.status)
 
         match = re.search(r'<iframe id="iframe" src="([^"]+)">', data)
         if not match:
