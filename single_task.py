@@ -45,7 +45,7 @@ if not task:
     time.sleep(300)
     sys.exit(0)
 
-reaper = tinyback.Reaper(task)
+reaper = tinyback.Reaper(task, progress=True)
 fileobj = reaper.run(tmp_dir)
 tracker.put(task, fileobj, username)
 fileobj.close()

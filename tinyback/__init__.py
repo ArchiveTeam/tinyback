@@ -19,6 +19,7 @@
 import gzip
 import hashlib
 import logging
+import sys
 import tempfile
 import time
 
@@ -71,10 +72,11 @@ class Reaper:
 
     MAX_TRIES = 3
 
-    def __init__(self, task):
+    def __init__(self, task, progress=False):
         self._log = logging.getLogger("tinyback.Reaper")
         self._task = task
         self._service = services.factory(self._task["service"])
+        self._progress = progress
 
         self._codes_tried = 0
         self._urls_found = 0
@@ -117,6 +119,7 @@ class Reaper:
                     else:
                         self._urls_found += 1
                         self._log.debug("Code %s leads to URL '%s'" % (code, result.decode("ascii", "replace")))
+                        self._print_progress()
                         gzip_fileobj.write(code + "|")
                         gzip_fileobj.write(result)
                         gzip_fileobj.write("\n")
@@ -142,3 +145,12 @@ class Reaper:
         settings = self._service.rate_limit
         self._rate_limit_bucket = settings[0] - 1
         self._rate_limit_next = time.time() + settings[1]
+
+    def _print_progress(self):
+        """Print progress for use in Seesaw"""
+        if self._progress and self._codes_tried % 10 == 0:
+            # FIXME: Need newline logic to stop messy log msgs due to lack
+            # of ending newline
+            sys.stdout.write('\r Found %d URLs of %d examined so far' % (
+                self._urls_found, self._codes_tried))
+            sys.stdout.flush()
