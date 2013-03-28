@@ -34,7 +34,38 @@ for i, value in enumerate(sys.argv):
     elif i == 3:
         tracker = value
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s: %(message)s")
+
+class StreamHandlerWithProgress(logging.StreamHandler):
+    """For use with Seesaw to output progress"""
+    def __init__(self):
+        self._last_newline = True
+        logging.StreamHandler.__init__(self)
+
+    def emit(self, record):
+        if not getattr(record, 'progress', None):
+            if not self._last_newline:
+                sys.stdout.write('\n')
+
+            self._last_newline = True
+            return logging.StreamHandler.emit(self, record)
+
+        try:
+            self._last_newline = False
+            message = record.getMessage()
+            sys.stdout.write('\r ')
+            sys.stdout.write(message)
+            sys.stdout.flush()
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            self.handleError(record)
+
+
+handler = StreamHandlerWithProgress()
+handler.setFormatter(logging.Formatter("%(asctime)s %(name)s %(levelname)s: %(message)s"))
+logger = logging.getLogger()
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
 
 tracker = tinyback.tracker.Tracker(tracker)
 try:

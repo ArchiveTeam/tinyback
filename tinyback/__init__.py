@@ -149,8 +149,5 @@ class Reaper:
     def _print_progress(self):
         """Print progress for use in Seesaw"""
         if self._progress and self._codes_tried % 10 == 0:
-            # FIXME: Need newline logic to stop messy log msgs due to lack
-            # of ending newline
-            sys.stdout.write('\r Found %d URLs of %d examined so far' % (
-                self._urls_found, self._codes_tried))
-            sys.stdout.flush()
+            self._log.info('Found %d URLs of %d examined so far',
+                self._urls_found, self._codes_tried, extra={'progress': True})
