@@ -793,7 +793,7 @@ class Vbly(YourlsService):
 
     @property
     def yourls_url_convert(self):
-        return 32
+        return 36
 
 
 class Arsehat(YourlsService):
@@ -804,7 +804,7 @@ class Arsehat(YourlsService):
 
     @property
     def yourls_url_convert(self):
-        return 32
+        return 36
 
 
 _factory_map = {
