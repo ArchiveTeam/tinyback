@@ -241,7 +241,7 @@ class YourlsService(Service):
             self._conn = klass(parsed_url.netloc, timeout=30)
 
     def fetch(self, code):
-        params = {"action": "expand", "shorturl": code, "format": "json"}
+        params = {"action": "expand", "shorturl": code, "format": "simple"}
         try:
             self._conn.request("GET", self._path + "?" + urllib.urlencode(params))
             resp = self._conn.getresponse()
@@ -254,36 +254,10 @@ class YourlsService(Service):
             raise exceptions.ServiceException("Socket error: %s" % e)
 
         if resp.status == 200:
-            return self._parse_json(data, code)
-        raise exceptions.ServiceException("Unexpected HTTP status %i" % resp.status)
-
-    def _parse_json(self, data, code):
-        try:
-            data = json.loads(data)
-        except ValueError:
-            raise exceptions.ServiceException("Could not decode response")
-
-        if not "keyword" in data:
-            raise exceptions.ServiceException("Keyword is missing from response")
-        elif data["keyword"] != code:
-            raise exceptions.ServiceException("Keyword does not match code")
-
-        if "errorCode" in data:
-            if data["errorCode"] == 404:
+            if data == "not found":
                 raise exceptions.NoRedirectException()
-            else:
-                raise exceptions.ServiceException("Unexpected error code: %s" % str(data["errorCode"]))
-
-        if "statusCode" in data:
-            if data["statusCode"] == 200:
-                if not "longurl" in data:
-                    raise exceptions.ServiceException("Status code 200 but no URL")
-                else:
-                    return data["longurl"]
-            else:
-                raise exceptions.ServiceException("Unexpected status code: %s" % str(data["statusCode"]))
-
-        raise exceptions.ServiceException("Neither status nor error code found in response")
+            return data
+        raise exceptions.ServiceException("Unexpected HTTP status %i" % resp.status)
 
 class Bitly(HTTPService):
     """

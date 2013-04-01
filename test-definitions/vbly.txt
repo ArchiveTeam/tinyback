@@ -5,3 +5,6 @@
 oycsuls|notfound
 # Custom shortcode
 examplecom|http://www.example.com/
+
+## URL contains non-ascii data
+ba|http://图片
