@@ -21,6 +21,8 @@ def factory(generator_type, generator_options):
         return chain_generator(generator_options)
     elif generator_type == "sequence":
         return sequence_generator(generator_options)
+    elif generator_type == "list":
+        return generator_options["list"].__iter__()
     else:
         raise ValueError("Unknown generator %s" % generator_type)
 
