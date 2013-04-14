@@ -714,7 +714,7 @@ class BaseVisibliService(SimpleService):
         if resp.status != 200:
             raise exceptions.ServiceException("HTTP status changed from 200 to %i on second request" % resp.status)
 
-        match = re.search(r'<iframe id="iframe" src="([^"]+)">', data)
+        match = re.search(r'<iframe id="[^"]+" src="([^"]+)">', data)
         if not match:
             raise exceptions.ServiceException("No iframe url found")
 
