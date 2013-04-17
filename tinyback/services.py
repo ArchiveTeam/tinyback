@@ -704,9 +704,24 @@ class BaseVisibliService(SimpleService):
 
     @property
     def http_status_no_redirect(self):
-        return [302]
+        return []  # see unexpected_http_status
+
+    @property
+    def http_headers(self):
+        return {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8.3) "
+            "Gecko/20120431 Firefox/18.0"}
 
     def unexpected_http_status(self, code, resp):
+        if resp.status == 302:
+            location = resp.getheader("Location")
+
+            if location and ("sharedby" in location or "visibli" in location):
+                raise exceptions.NoRedirectException()
+            elif location and "yahoo" in location:
+                raise exceptions.BlockedException("Banned (location=%s)" % location)
+
+            raise exceptions.ServiceException("Unusual redirect to %s" % location)
+
         if resp.status != 200:
             return super(BaseVisbliService, self).unexpected_http_status(code, resp)
 
@@ -716,6 +731,9 @@ class BaseVisibliService(SimpleService):
 
         match = re.search(r'<iframe id="[^"]+" src="([^"]+)">', data)
         if not match:
+            if 'Undefined index:  HTTP_USER_AGENT' in data:
+                raise exceptions.ServiceException("Website broken about user-agent")
+
             raise exceptions.ServiceException("No iframe url found")
 
         url = match.group(1).decode("utf-8")
