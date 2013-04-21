@@ -717,10 +717,11 @@ class BaseVisibliService(SimpleService):
 
             if location and ("sharedby" in location or "visibli" in location):
                 raise exceptions.NoRedirectException()
-            elif location and "yahoo" in location:
+            elif location and location.startswith("http://yahoo.com"):
                 raise exceptions.BlockedException("Banned (location=%s)" % location)
 
-            raise exceptions.ServiceException("Unusual redirect to %s" % location)
+            # Guess it be an override for site that busts out iframes
+            return location
 
         if resp.status != 200:
             return super(BaseVisbliService, self).unexpected_http_status(code, resp)
