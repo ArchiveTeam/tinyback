@@ -670,8 +670,12 @@ class Postly(SimpleService):
         return "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
     @property
+    def rate_limit(self):
+        return None
+
+    @property
     def url(self):
-        return "http://post.ly/"
+        return "https://post.ly/"
 
     @property
     def http_status_redirect(self):
@@ -680,10 +684,6 @@ class Postly(SimpleService):
     @property
     def http_status_no_redirect(self):
         return [302]
-
-    @property
-    def http_headers(self):
-        return {"User-Agent": "Tinyback v%s (%s v%s) ArchiveTeam" % (tinyback.__version__, platform.python_implementation(), platform.python_version())}
 
 class Wpme(SimpleService):
     """ Wordpress.com's shortener wp.me. """
