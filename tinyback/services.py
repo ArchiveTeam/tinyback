@@ -304,7 +304,7 @@ class Bitly(HTTPService):
 
     def _parse_warning_url(self, code, url):
         url = urlparse.urlparse(url)
-        if url.scheme != "http" or url.netloc != "bitly.com" or url.path != "/a/warning":
+        if url.scheme != "http" or url.netloc != "bit.ly" or url.path != "/a/warning":
             raise exceptions.ServiceException("Unexpected Location header after HTTP status 302")
         query = urlparse.parse_qs(url.query)
         if not ("url" in query and len(query["url"]) == 1) or not ("hash" in query and len(query["hash"]) == 1):
