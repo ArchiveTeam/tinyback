@@ -14,9 +14,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+tinyback.generators - Module to generate lists of shortcodes
+
+To ensure that each task always consists of the same shortcodes, tinyback uses
+different generators that - given one set of input parameters - will always
+yield the same sequence of shortcodes.
+"""
+
 import hashlib
 
 def factory(generator_type, generator_options):
+    """
+    Creates a new generator
+
+    Returns a generator of the given type initialized with the specified
+    options. Valid types are: chain, list and sequence.
+    """
     if generator_type == "chain":
         return chain_generator(generator_options)
     elif generator_type == "sequence":
@@ -27,6 +41,19 @@ def factory(generator_type, generator_options):
         raise ValueError("Unknown generator %s" % generator_type)
 
 def chain_generator(options):
+    """
+    Chain generator - Pseudorandom shortcode generation
+
+    The chain generator uses the MD5 hash function to generate a sequence of
+    pseudorandom shortcodes. The output of one hash calculation is fed in a
+    chain-like manner into the input for the next hash calculation, hence the
+    name.
+
+    charset: String with all possible shortcode characters
+    count: Number of shortcodes to generate
+    length: Length for each generated shortcode
+    seed: Random seed for shortcode generation
+    """
     if options["length"] > hashlib.md5().digest_size:
         raise ValueError("Length must be shorter than digest size")
 
@@ -50,6 +77,20 @@ def chain_generator(options):
                 break
 
 def sequence_generator(options):
+    """
+    Sequence generator - Sequential shortcode generation
+
+    The sequence generator takes a start and stop code and will generate all
+    shortcodes in between in lexicographical order (determinted by the
+    charset). Start and stop codes will also be part of the sequence. The
+    generator does no error checking - it is up to the user to ensure that
+    start comes before stop and that they only contain characters from the
+    charset.
+
+    charset: String with all possible shortcode characters
+    start: Start sequence with this code
+    stop: End sequence with this code
+    """
     code = options["start"]
     yield code
     while code != options["stop"]:
