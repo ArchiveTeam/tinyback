@@ -707,6 +707,10 @@ class BaseVisibliService(SimpleService):
         return []  # see unexpected_http_status
 
     @property
+    def rate_limit(self):
+        return (1, 5)
+
+    @property
     def http_headers(self):
         return {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8.3) "
             "Gecko/20120431 Firefox/18.0"}
@@ -746,6 +750,9 @@ class VisibliHex(BaseVisibliService):
     """Visibli's old share shortener
 
     It uses urls like http://links.visibli.com/links/fbc5fa
+
+    Note: This service is obsolete and it should not need to be run as
+    it is being grabbed without tinyback. See the wiki.
     """
 
     @property
@@ -767,6 +774,7 @@ class Visibli(BaseVisibliService):
     * http://links.sharedby.co/share/AHbpFG
     * http://sharedby.co/AHbpFG
     * http://archive_team_and_urlteam_is_the_best.sharedby.co/AHbpFG
+    * http://shrd.by/AHbpFG
     """
 
     @property

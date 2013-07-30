@@ -23,5 +23,7 @@ infrastructure.
 * [Tinyurl](http://www.tinyurl.com/)
 * [Trimnew](http://tr.im/)
 * [Ur1ca](http://ur1.ca/)
-* [SharedBy](http://sharedby.co) (formerly Visibli)
 * [Snipurl](http://www.snipurl.com)
+
+## Experimental support
+* [SharedBy](http://sharedby.co) (formerly Visibli, they manually ban noticable traffic)
