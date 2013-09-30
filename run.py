@@ -29,7 +29,7 @@ def parse_options():
     parser = optparse.OptionParser()
 
     parser.add_option("-t", "--tracker", dest="tracker",
-        default="http://tracker.tinyarchive.org/v1/",
+        default="http://urlteam.terrywri.st/",
         help="Connect to tracker at URL", metavar="URL")
     parser.add_option("-c", "--clear", dest="clear", action="store_true",
         help="Clear all pending tasks from tracker")
